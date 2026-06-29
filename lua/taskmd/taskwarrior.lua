@@ -73,6 +73,14 @@ local function find_pending_child(parent)
     return nil
 end
 
+---@param child table<string, any>
+---@param parent table<string, any>
+local function copy_recur(child, parent)
+    if type(child.recur) ~= "string" and type(parent.recur) == "string" then
+        child.recur = parent.recur
+    end
+end
+
 ---@param task TaskMDTask
 ---@return table<string, any>?
 function M.add(task)
@@ -150,10 +158,7 @@ function M.add(task)
         local child = find_pending_child(created)
 
         if child then
-            if type(child.recur) ~= "string" and type(created.recur) == "string" then
-                child.recur = created.recur
-            end
-
+            copy_recur(child, created)
             return child
         end
 
@@ -175,8 +180,8 @@ function M.get(uuid)
     if type(task.recur) ~= "string" and type(task.parent) == "string" then
         local parent = get_task(task.parent)
 
-        if parent and type(parent.recur) == "string" then
-            task.recur = parent.recur
+        if parent then
+            copy_recur(task, parent)
         end
     end
 

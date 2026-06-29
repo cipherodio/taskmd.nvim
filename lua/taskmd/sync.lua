@@ -29,6 +29,41 @@ local function get_markdown_time(line)
 end
 
 ---@param line string
+---@param left string
+---@return string
+local function replace_time_left(line, left)
+    local in_start, in_end = line:find("%s+in:")
+
+    if in_start and in_end then
+        local search_from = in_end + 1
+        local recur_start = line:find("%s+recur:", search_from)
+        local uuid_start = line:find("%s+uuid:", search_from)
+
+        local marker_start
+
+        if recur_start and uuid_start then
+            marker_start = math.min(recur_start, uuid_start)
+        else
+            marker_start = recur_start or uuid_start
+        end
+
+        if marker_start then
+            return line:sub(1, in_end) .. left .. line:sub(marker_start)
+        end
+
+        return line:sub(1, in_end) .. left
+    end
+
+    local uuid_start = line:find("%s+uuid:")
+
+    if uuid_start then
+        return line:sub(1, uuid_start - 1) .. " in:" .. left .. line:sub(uuid_start)
+    end
+
+    return line
+end
+
+---@param line string
 ---@return string?
 local function update_time_only(line)
     if not line:match("uuid:") then
@@ -53,11 +88,7 @@ local function update_time_only(line)
         return nil
     end
 
-    if line:match("%s+in:") then
-        return (line:gsub("in:.-%s+uuid:", "in:" .. left .. " uuid:", 1))
-    end
-
-    return (line:gsub("%s+uuid:", " in:" .. left .. " uuid:", 1))
+    return replace_time_left(line, left)
 end
 
 ---@param line string
