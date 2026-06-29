@@ -1,0 +1,12 @@
+:TaskMD	taskmd.txt	/*:TaskMD*
+:TaskMD-add	taskmd.txt	/*:TaskMD-add*
+:TaskMD-sync	taskmd.txt	/*:TaskMD-sync*
+taskmd-commands	taskmd.txt	/*taskmd-commands*
+taskmd-contents	taskmd.txt	/*taskmd-contents*
+taskmd-format	taskmd.txt	/*taskmd-format*
+taskmd-health	taskmd.txt	/*taskmd-health*
+taskmd-introduction	taskmd.txt	/*taskmd-introduction*
+taskmd-keymaps	taskmd.txt	/*taskmd-keymaps*
+taskmd-requirements	taskmd.txt	/*taskmd-requirements*
+taskmd-setup	taskmd.txt	/*taskmd-setup*
+taskmd.nvim.txt	taskmd.txt	/*taskmd.nvim.txt*

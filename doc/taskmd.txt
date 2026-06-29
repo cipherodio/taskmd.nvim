@@ -3,4 +3,140 @@
 Author: Jeremy
 License: MIT license
 
+==============================================================================
+CONTENTS						     *taskmd-contents*
+
+1. Introduction					     |taskmd-introduction|
+2. Requirements					     |taskmd-requirements|
+3. Setup					     |taskmd-setup|
+4. Commands					     |taskmd-commands|
+5. Keymaps					     |taskmd-keymaps|
+6. Markdown format				     |taskmd-format|
+7. Health					     |taskmd-health|
+
+==============================================================================
+INTRODUCTION						 *taskmd-introduction*
+
+taskmd.nvim is a small plugin that integrates Markdown notes with Taskwarrior.
+
+It can create Taskwarrior tasks from Neovim and insert a readable Markdown task
+line at the cursor.
+
+Example:
+>markdown
+    - Cook meal scheduled:june-29-2026 @08:30pm in:2h uuid:...
+<
+==============================================================================
+REQUIREMENTS						   *taskmd-requirements*
+
+taskmd.nvim requires:
+
+- Neovim 0.12+
+- Taskwarrior
+
+The `task` command must be available in your PATH.
+
+==============================================================================
+SETUP								  *taskmd-setup*
+
+Example setup:
+>lua
+    require("taskmd").setup({
+	keymaps = {
+	    add = "<leader>ta",
+	    sync = "<leader>ts",
+	},
+    })
+
+<
+Keymaps are optional.
+
+==============================================================================
+COMMANDS						       *taskmd-commands*
+
+To add task:						*:TaskMD*
+>vim
+    :TaskMD add
+<
+    Create a new Taskwarrior task and insert a Markdown task line at the
+    cursor.
+
+    It asks for:
+
+    - Task
+    - Date
+    - Scheduled
+    - Due
+    - Project
+    - Priority
+    - Tags
+
+Output for adding task:					*:TaskMD-add*
+>vim
+    :TaskMD add
+<
+    Example input:
+>vim
+    Task: Cook meal
+    Date: 2026-06-29
+    Scheduled: 08:30pm
+    Due:
+    Project: chores
+    Priority: H
+    Tags: home
+<
+    Example output:
+>markdown
+    - Cook meal scheduled:june-29-2026 @08:30pm in:2h uuid:...
+<
+Sync task with Taskwarrior:				*:TaskMD-sync*
+>vim
+    :TaskMD sync
+<
+    Sync Markdown task lines that contain `uuid:`.
+
+    The plugin reads the Taskwarrior task using its UUID and refreshes the
+    Markdown line.
+
+==============================================================================
+KEYMAPS								*taskmd-keymaps*
+
+You can configure keymaps like this:
+>lua
+    require("taskmd").setup({
+	keymaps = {
+	    add = "<leader>ta",
+	    sync = "<leader>ts",
+	},
+    })
+<
+==============================================================================
+MARKDOWN FORMAT							 *taskmd-format*
+
+Scheduled task format:
+>markdown
+    - Cook meal scheduled:june-29-2026 @08:30pm in:2h uuid:...
+<
+Due task format:
+>markdown
+    - Cook meal due:june-29-2026 @08:30pm in:2h uuid:...
+<
+The `uuid:` value is important. It connects the Markdown line to the real
+Taskwarrior task.
+
+Do not remove the UUID if you want `:TaskMD sync` to keep working.
+
+==============================================================================
+HEALTH								 *taskmd-health*
+
+Run:
+>vim
+    :checkhealth taskmd
+<
+This checks:
+
+- If the `task` command is executable
+- If configured keymaps are valid
+
+==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:syntax=help:
