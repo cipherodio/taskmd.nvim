@@ -1,10 +1,6 @@
----@class TaskMDAsyncOptions
----@field enabled? boolean
----@field rate? integer
----@field file_path? string|string[]
-
 ---@class TaskMDOptions
----@field async? TaskMDAsyncOptions
+---@field sync_on_open? boolean
+---@field file_path? string|string[]
 ---@field short_uuid? boolean
 ---@field keymaps? table<string, string>
 
@@ -12,12 +8,8 @@ local M = {}
 
 ---@type TaskMDOptions
 M.options = {
-    async = {
-        enabled = false,
-        rate = 1,
-        file_path = nil,
-    },
-
+    sync_on_open = false,
+    file_path = nil,
     short_uuid = false,
 }
 
