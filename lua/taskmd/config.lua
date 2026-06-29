@@ -1,10 +1,13 @@
 ---@class TaskMDOptions
+---@field short_uuid? boolean
 ---@field keymaps? table<string, string>
 
 local M = {}
 
 ---@type TaskMDOptions
-M.options = {}
+M.options = {
+    short_uuid = false,
+}
 
 ---@param opts? TaskMDOptions
 function M.setup(opts)

@@ -1,3 +1,4 @@
+local config = require("taskmd.config")
 local date = require("taskmd.utils.date")
 
 local M = {}
@@ -11,6 +12,20 @@ local M = {}
 ---@field priority string
 ---@field tags string
 ---@field uuid? string
+
+---@param uuid string?
+---@return string
+local function display_uuid(uuid)
+    if type(uuid) ~= "string" or uuid == "" then
+        return "pending"
+    end
+
+    if config.options.short_uuid then
+        return uuid:sub(1, 8)
+    end
+
+    return uuid
+end
 
 ---@param task TaskMDTask
 ---@return string
@@ -46,7 +61,7 @@ function M.line(task)
         end
     end
 
-    table.insert(parts, "uuid:" .. (task.uuid or "pending"))
+    table.insert(parts, "uuid:" .. display_uuid(task.uuid))
 
     return table.concat(parts, " ")
 end
