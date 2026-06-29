@@ -62,12 +62,22 @@ local function sync_buffer(bufnr)
         return
     end
 
-    sync.refresh({
-        bufnr = bufnr,
-        quiet = true,
-    })
-
     synced[bufnr] = true
+
+    vim.defer_fn(function()
+        if not vim.api.nvim_buf_is_valid(bufnr) then
+            return
+        end
+
+        if not matches_file(bufnr) then
+            return
+        end
+
+        sync.refresh({
+            bufnr = bufnr,
+            quiet = true,
+        })
+    end, 100)
 end
 
 function M.setup()
