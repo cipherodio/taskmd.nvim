@@ -155,4 +155,34 @@ function M.delete(uuid)
     return true
 end
 
+---@return table[]?
+function M.pending()
+    local result = vim.system({
+        "task",
+        "status:pending",
+        "export",
+    }, {
+        text = true,
+    }):wait()
+
+    if result.code ~= 0 then
+        shared.notify_error(result)
+        return nil
+    end
+
+    if type(result.stdout) ~= "string" or result.stdout == "" then
+        vim.notify("TaskMD: Taskwarrior returned no tasks.", vim.log.levels.ERROR)
+        return nil
+    end
+
+    local ok, decoded = pcall(vim.json.decode, result.stdout)
+
+    if not ok or type(decoded) ~= "table" then
+        vim.notify("TaskMD: failed to read Taskwarrior JSON.", vim.log.levels.ERROR)
+        return nil
+    end
+
+    return decoded
+end
+
 return M
