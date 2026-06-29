@@ -147,7 +147,17 @@ function M.add(task)
     end
 
     if created.status == "recurring" then
-        return find_pending_child(created) or created
+        local child = find_pending_child(created)
+
+        if child then
+            if type(child.recur) ~= "string" and type(created.recur) == "string" then
+                child.recur = created.recur
+            end
+
+            return child
+        end
+
+        return created
     end
 
     return created
@@ -156,7 +166,21 @@ end
 ---@param uuid string
 ---@return table<string, any>?
 function M.get(uuid)
-    return get_task(uuid)
+    local task = get_task(uuid)
+
+    if not task then
+        return nil
+    end
+
+    if type(task.recur) ~= "string" and type(task.parent) == "string" then
+        local parent = get_task(task.parent)
+
+        if parent and type(parent.recur) == "string" then
+            task.recur = parent.recur
+        end
+    end
+
+    return task
 end
 
 ---@param uuid string
