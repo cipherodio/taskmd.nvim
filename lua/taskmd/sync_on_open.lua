@@ -73,10 +73,16 @@ local function sync_buffer(bufnr)
             return
         end
 
+        local was_modified = vim.bo[bufnr].modified
+
         sync.refresh({
             bufnr = bufnr,
             quiet = true,
         })
+
+        if not was_modified and vim.api.nvim_buf_is_valid(bufnr) then
+            vim.bo[bufnr].modified = false
+        end
     end, 100)
 end
 
