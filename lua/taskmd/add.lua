@@ -1,4 +1,5 @@
 local render = require("taskmd.render")
+local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
 
@@ -8,6 +9,7 @@ local function prompt(label)
     return vim.fn.input(label .. ": ")
 end
 
+---@param line string
 local function insert_line(line)
     local row = vim.api.nvim_win_get_cursor(0)[1]
 
@@ -33,6 +35,14 @@ function M.create()
         priority = prompt("Priority"),
         tags = prompt("Tags"),
     }
+
+    local uuid = taskwarrior.add(item)
+
+    if not uuid then
+        return
+    end
+
+    item.uuid = uuid
 
     local line = render.line(item)
 

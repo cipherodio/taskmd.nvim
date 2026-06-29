@@ -7,6 +7,9 @@ local M = {}
 ---@field date string
 ---@field scheduled string
 ---@field due string
+---@field project string
+---@field priority string
+---@field tags string
 ---@field uuid? string
 
 ---@param task TaskMDTask

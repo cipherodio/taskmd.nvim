@@ -123,4 +123,34 @@ function M.time_left(date, time)
     return ("%dm"):format(mins)
 end
 
+---@param date string
+---@param time string
+---@return string?
+function M.task_datetime(date, time)
+    local year, month, day = date:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+
+    if not (year and month and day) then
+        return nil
+    end
+
+    local minutes = time_to_24h(M.display_time(time))
+
+    if not minutes then
+        return nil
+    end
+
+    local y = tonumber(year)
+    local m = tonumber(month)
+    local d = tonumber(day)
+
+    if not (y and m and d) then
+        return nil
+    end
+
+    local hour = math.floor(minutes / 60)
+    local min = minutes % 60
+
+    return ("%04d-%02d-%02dT%02d:%02d"):format(y, m, d, hour, min)
+end
+
 return M
