@@ -153,4 +153,37 @@ function M.task_datetime(date, time)
     return ("%04d-%02d-%02dT%02d:%02d"):format(y, m, d, hour, min)
 end
 
+local month_numbers = {
+    january = "01",
+    february = "02",
+    march = "03",
+    april = "04",
+    may = "05",
+    june = "06",
+    july = "07",
+    august = "08",
+    september = "09",
+    october = "10",
+    november = "11",
+    december = "12",
+}
+
+---@param display_date string
+---@return string?
+function M.parse_display_date(display_date)
+    local month, day, year = display_date:match("^([a-z]+)%-(%d%d)%-(%d%d%d%d)$")
+
+    if not (month and day and year) then
+        return nil
+    end
+
+    local month_number = month_numbers[month]
+
+    if not month_number then
+        return nil
+    end
+
+    return ("%s-%s-%s"):format(year, month_number, day)
+end
+
 return M
