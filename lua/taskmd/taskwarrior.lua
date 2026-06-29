@@ -65,15 +65,23 @@ function M.add(task)
         table.insert(args, "scheduled:" .. scheduled)
     end
 
-    if task.date ~= "" and task.due ~= "" then
-        local due = date.task_datetime(task.date, task.due)
+    if task.due ~= "" then
+        if task.date ~= "" then
+            local due = date.task_datetime(task.date, task.due)
 
-        if not due then
-            vim.notify("TaskMD: invalid due date/time.", vim.log.levels.ERROR)
-            return nil
+            if not due then
+                vim.notify("TaskMD: invalid due date/time.", vim.log.levels.ERROR)
+                return nil
+            end
+
+            table.insert(args, "due:" .. due)
+        else
+            table.insert(args, "due:" .. task.due)
         end
+    end
 
-        table.insert(args, "due:" .. due)
+    if task.recur ~= "" then
+        table.insert(args, "recur:" .. task.recur)
     end
 
     if task.project ~= "" then

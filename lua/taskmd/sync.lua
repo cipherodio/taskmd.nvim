@@ -1,5 +1,6 @@
 local date = require("taskmd.utils.date")
 local render = require("taskmd.render")
+local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
@@ -59,53 +60,6 @@ local function update_time_only(line)
     return (line:gsub("%s+uuid:", " in:" .. left .. " uuid:", 1))
 end
 
----@param task table<string, any>
----@return TaskMDTask?
-local function to_item(task)
-    local description = task.description
-
-    if type(description) ~= "string" or description == "" then
-        return nil
-    end
-
-    local item = {
-        task = description,
-        date = "",
-        scheduled = "",
-        due = "",
-        project = "",
-        priority = "",
-        tags = "",
-        uuid = task.uuid,
-    }
-
-    if type(task.project) == "string" then
-        item.project = task.project
-    end
-
-    if type(task.priority) == "string" then
-        item.priority = task.priority
-    end
-
-    if type(task.scheduled) == "string" then
-        local task_date, task_time = date.from_taskwarrior_datetime(task.scheduled)
-
-        if task_date and task_time then
-            item.date = task_date
-            item.scheduled = task_time
-        end
-    elseif type(task.due) == "string" then
-        local task_date, task_time = date.from_taskwarrior_datetime(task.due)
-
-        if task_date and task_time then
-            item.date = task_date
-            item.due = task_time
-        end
-    end
-
-    return item
-end
-
 ---@param line string
 ---@return string?
 local function update_from_taskwarrior(line)
@@ -125,7 +79,7 @@ local function update_from_taskwarrior(line)
         return nil
     end
 
-    local item = to_item(task)
+    local item = shared.to_item(task)
 
     if not item then
         return nil

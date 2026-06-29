@@ -31,6 +31,7 @@ function M.create()
         date = prompt("Date"),
         scheduled = prompt("Scheduled"),
         due = prompt("Due"),
+        recur = prompt("Recur"),
         project = prompt("Project"),
         priority = prompt("Priority"),
         tags = prompt("Tags"),

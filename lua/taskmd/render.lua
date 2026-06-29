@@ -8,6 +8,7 @@ local M = {}
 ---@field date string
 ---@field scheduled string
 ---@field due string
+---@field recur string
 ---@field project string
 ---@field priority string
 ---@field tags string
@@ -59,6 +60,10 @@ function M.line(task)
         if left then
             table.insert(parts, "in:" .. left)
         end
+    end
+
+    if task.recur ~= "" then
+        table.insert(parts, "recur:" .. task.recur)
     end
 
     table.insert(parts, "uuid:" .. display_uuid(task.uuid))
