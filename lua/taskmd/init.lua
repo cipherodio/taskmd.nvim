@@ -1,6 +1,7 @@
 local M = {}
 
 local add = require("taskmd.add")
+local async = require("taskmd.async")
 local config = require("taskmd.config")
 local sync = require("taskmd.sync")
 
@@ -31,6 +32,8 @@ function M.setup(opts)
             end
         end
     end
+
+    async.setup()
 end
 
 vim.api.nvim_create_user_command("TaskMD", function(opts)
