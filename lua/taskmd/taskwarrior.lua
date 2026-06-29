@@ -22,8 +22,8 @@ local function created_id(output)
 end
 
 ---@param id string
----@return string?
-local function get_uuid(id)
+---@return table<string, any>?
+local function get_task(id)
     local result = vim.system({ "task", id, "export" }, {
         text = true,
     }):wait()
@@ -35,18 +35,46 @@ local function get_uuid(id)
 
     local ok, decoded = pcall(vim.json.decode, result.stdout)
 
-    if not ok then
+    if not ok or type(decoded) ~= "table" then
         vim.notify("TaskMD: failed to read Taskwarrior JSON.", vim.log.levels.ERROR)
         return nil
     end
 
     local task = decoded[1] or decoded
 
-    return task.uuid
+    if type(task) ~= "table" then
+        return nil
+    end
+
+    return task
+end
+
+---@param parent table<string, any>
+---@return table<string, any>?
+local function find_pending_child(parent)
+    local parent_uuid = parent.uuid
+
+    if type(parent_uuid) ~= "string" then
+        return nil
+    end
+
+    local tasks = M.pending()
+
+    if not tasks then
+        return nil
+    end
+
+    for _, task in ipairs(tasks) do
+        if type(task) == "table" and task.parent == parent_uuid then
+            return task
+        end
+    end
+
+    return nil
 end
 
 ---@param task TaskMDTask
----@return string?
+---@return table<string, any>?
 function M.add(task)
     local args = {
         "task",
@@ -112,35 +140,23 @@ function M.add(task)
         return nil
     end
 
-    return get_uuid(id)
+    local created = get_task(id)
+
+    if not created then
+        return nil
+    end
+
+    if created.status == "recurring" then
+        return find_pending_child(created) or created
+    end
+
+    return created
 end
 
 ---@param uuid string
 ---@return table<string, any>?
 function M.get(uuid)
-    local result = vim.system({ "task", uuid, "export" }, {
-        text = true,
-    }):wait()
-
-    if result.code ~= 0 then
-        shared.notify_error(result)
-        return nil
-    end
-
-    local ok, decoded = pcall(vim.json.decode, result.stdout)
-
-    if not ok or type(decoded) ~= "table" then
-        vim.notify("TaskMD: failed to read Taskwarrior JSON.", vim.log.levels.ERROR)
-        return nil
-    end
-
-    local task = decoded[1]
-
-    if type(task) ~= "table" then
-        return nil
-    end
-
-    return task
+    return get_task(uuid)
 end
 
 ---@param uuid string

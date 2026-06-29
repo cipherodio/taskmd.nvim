@@ -1,4 +1,5 @@
 local render = require("taskmd.render")
+local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
@@ -37,15 +38,19 @@ function M.create()
         tags = prompt("Tags"),
     }
 
-    local uuid = taskwarrior.add(item)
+    local created = taskwarrior.add(item)
 
-    if not uuid then
+    if not created then
         return
     end
 
-    item.uuid = uuid
+    local created_item = shared.to_item(created)
 
-    local line = render.line(item)
+    if not created_item then
+        return
+    end
+
+    local line = render.line(created_item)
 
     insert_line(line)
 end
