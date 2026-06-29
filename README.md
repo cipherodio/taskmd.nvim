@@ -69,13 +69,13 @@ Tags:
 Example Markdown output:
 
 ```md
-- Cook my food scheduled:june-29-2026 @11:55pm in:6m uuid:9b2f859a-9428-437b-84c1-d0857e5731d2
+- Cook meal scheduled:june-29-2026 @11:55pm in:6m uuid:9b2f859a-9428-437b-84c1-d0857e5731d2
 ```
 
 Due tasks use this format:
 
 ```md
-- Cook my food due:june-29-2026 @11:55pm in:6m uuid:9b2f859a-9428-437b-84c1-d0857e5731d2
+- Cook meal due:june-29-2026 @11:55pm in:6m uuid:9b2f859a-9428-437b-84c1-d0857e5731d2
 ```
 
 ## Health
