@@ -76,24 +76,52 @@ local function format_duration(seconds)
     local month = day * 30
     local year = day * 365
 
-    local units = {
-        { label = "y", seconds = year },
-        { label = "mo", seconds = month },
-        { label = "w", seconds = week },
-        { label = "d", seconds = day },
-        { label = "h", seconds = hour },
-        { label = "m", seconds = minute },
-    }
+    local years = math.floor(seconds / year)
+    seconds = seconds % year
+
+    local month_count = math.floor(seconds / month)
+    seconds = seconds % month
+
+    if years == 0 and month_count >= 12 then
+        years = 1
+        month_count = month_count - 12
+    end
+
+    local weeks = math.floor(seconds / week)
+    seconds = seconds % week
+
+    local days = math.floor(seconds / day)
+    seconds = seconds % day
+
+    local hours = math.floor(seconds / hour)
+    seconds = seconds % hour
+
+    local minutes = math.floor(seconds / minute)
 
     local parts = {}
 
-    for _, unit in ipairs(units) do
-        local value = math.floor(seconds / unit.seconds)
+    if years > 0 then
+        table.insert(parts, ("%dy"):format(years))
+    end
 
-        if value > 0 then
-            table.insert(parts, ("%d%s"):format(value, unit.label))
-            seconds = seconds % unit.seconds
-        end
+    if month_count > 0 then
+        table.insert(parts, ("%dmo"):format(month_count))
+    end
+
+    if weeks > 0 then
+        table.insert(parts, ("%dw"):format(weeks))
+    end
+
+    if days > 0 then
+        table.insert(parts, ("%dd"):format(days))
+    end
+
+    if hours > 0 then
+        table.insert(parts, ("%dh"):format(hours))
+    end
+
+    if minutes > 0 then
+        table.insert(parts, ("%dm"):format(minutes))
     end
 
     if #parts == 0 then
