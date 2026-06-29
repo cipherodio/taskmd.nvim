@@ -106,4 +106,32 @@ function M.add(task)
     return get_uuid(id)
 end
 
+---@param uuid string
+---@return table<string, any>?
+function M.get(uuid)
+    local result = vim.system({ "task", uuid, "export" }, {
+        text = true,
+    }):wait()
+
+    if result.code ~= 0 then
+        vim.notify(result.stderr, vim.log.levels.ERROR)
+        return nil
+    end
+
+    local ok, decoded = pcall(vim.json.decode, result.stdout)
+
+    if not ok or type(decoded) ~= "table" then
+        vim.notify("TaskMD: failed to read Taskwarrior JSON.", vim.log.levels.ERROR)
+        return nil
+    end
+
+    local task = decoded[1]
+
+    if type(task) ~= "table" then
+        return nil
+    end
+
+    return task
+end
+
 return M

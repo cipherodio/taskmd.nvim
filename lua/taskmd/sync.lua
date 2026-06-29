@@ -1,46 +1,88 @@
 local date = require("taskmd.utils.date")
+local render = require("taskmd.render")
+local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
 
 ---@param line string
 ---@return string?
+local function get_uuid(line)
+    return line:match("uuid:([%w%-]+)")
+end
+
+---@param task table<string, any>
+---@return TaskMDTask?
+local function to_item(task)
+    local description = task.description
+
+    if type(description) ~= "string" or description == "" then
+        return nil
+    end
+
+    local item = {
+        task = description,
+        date = "",
+        scheduled = "",
+        due = "",
+        project = "",
+        priority = "",
+        tags = "",
+        uuid = task.uuid,
+    }
+
+    if type(task.project) == "string" then
+        item.project = task.project
+    end
+
+    if type(task.priority) == "string" then
+        item.priority = task.priority
+    end
+
+    if type(task.scheduled) == "string" then
+        local task_date, task_time = date.from_taskwarrior_datetime(task.scheduled)
+
+        if task_date and task_time then
+            item.date = task_date
+            item.scheduled = task_time
+        end
+    elseif type(task.due) == "string" then
+        local task_date, task_time = date.from_taskwarrior_datetime(task.due)
+
+        if task_date and task_time then
+            item.date = task_date
+            item.due = task_time
+        end
+    end
+
+    return item
+end
+
+---@param line string
+---@return string?
 local function update_line(line)
-    if not line:match("uuid:") then
+    local uuid = get_uuid(line)
+
+    if not uuid then
         return nil
     end
 
-    local display_date
-    local display_time
+    local task = taskwarrior.get(uuid)
 
-    display_date, display_time =
-        line:match("scheduled:([a-z]+%-%d%d%-%d%d%d%d)%s+@(%d+:%d%d[ap]m)")
-
-    if not display_date then
-        display_date, display_time =
-            line:match("due:([a-z]+%-%d%d%-%d%d%d%d)%s+@(%d+:%d%d[ap]m)")
-    end
-
-    if not (display_date and display_time) then
+    if not task then
         return nil
     end
 
-    local task_date = date.parse_display_date(display_date)
-
-    if not task_date then
+    if task.status ~= "pending" then
         return nil
     end
 
-    local left = date.time_left(task_date, display_time)
+    local item = to_item(task)
 
-    if not left then
+    if not item then
         return nil
     end
 
-    if line:match("%s+in:") then
-        return (line:gsub("in:.-%s+uuid:", "in:" .. left .. " uuid:", 1))
-    end
-
-    return (line:gsub("%s+uuid:", " in:" .. left .. " uuid:", 1))
+    return render.line(item)
 end
 
 function M.refresh()
