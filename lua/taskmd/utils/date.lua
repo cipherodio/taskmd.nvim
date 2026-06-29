@@ -66,6 +66,43 @@ local function time_to_24h(time)
     return h * 60 + m
 end
 
+---@param seconds integer
+---@return string
+local function format_duration(seconds)
+    local minute = 60
+    local hour = minute * 60
+    local day = hour * 24
+    local week = day * 7
+    local month = day * 30
+    local year = day * 365
+
+    local units = {
+        { label = "y", seconds = year },
+        { label = "mo", seconds = month },
+        { label = "w", seconds = week },
+        { label = "d", seconds = day },
+        { label = "h", seconds = hour },
+        { label = "m", seconds = minute },
+    }
+
+    local parts = {}
+
+    for _, unit in ipairs(units) do
+        local value = math.floor(seconds / unit.seconds)
+
+        if value > 0 then
+            table.insert(parts, ("%d%s"):format(value, unit.label))
+            seconds = seconds % unit.seconds
+        end
+    end
+
+    if #parts == 0 then
+        return "0m"
+    end
+
+    return table.concat(parts, " ")
+end
+
 ---@param date string
 ---@param time string
 ---@return string?
@@ -109,18 +146,7 @@ function M.time_left(date, time)
         return "overdue"
     end
 
-    local hours = math.floor(diff / 3600)
-    local mins = math.floor((diff % 3600) / 60)
-
-    if hours > 0 and mins > 0 then
-        return ("%dh %dm"):format(hours, mins)
-    end
-
-    if hours > 0 then
-        return ("%dh"):format(hours)
-    end
-
-    return ("%dm"):format(mins)
+    return format_duration(diff)
 end
 
 ---@param date string
