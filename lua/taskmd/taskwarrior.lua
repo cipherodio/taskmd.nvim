@@ -1,4 +1,5 @@
 local date = require("taskmd.utils.date")
+local shared = require("taskmd.shared")
 
 local M = {}
 
@@ -28,7 +29,7 @@ local function get_uuid(id)
     }):wait()
 
     if result.code ~= 0 then
-        vim.notify(result.stderr, vim.log.levels.ERROR)
+        shared.notify_error(result)
         return nil
     end
 
@@ -92,7 +93,7 @@ function M.add(task)
     }):wait()
 
     if result.code ~= 0 then
-        vim.notify(result.stderr, vim.log.levels.ERROR)
+        shared.notify_error(result)
         return nil
     end
 
@@ -114,7 +115,7 @@ function M.get(uuid)
     }):wait()
 
     if result.code ~= 0 then
-        vim.notify(result.stderr, vim.log.levels.ERROR)
+        shared.notify_error(result)
         return nil
     end
 
@@ -147,13 +148,7 @@ function M.delete(uuid)
     }):wait()
 
     if result.code ~= 0 then
-        local message = result.stderr
-
-        if message == "" then
-            message = result.stdout
-        end
-
-        vim.notify(message, vim.log.levels.ERROR)
+        shared.notify_error(result)
         return false
     end
 

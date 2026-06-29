@@ -5,7 +5,7 @@ local M = {}
 
 local uv = vim.uv or vim.loop
 
----@type table<integer, uv_timer_t>
+---@type table<integer, any>
 local timers = {}
 
 ---@type table<integer, boolean>
