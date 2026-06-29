@@ -134,4 +134,30 @@ function M.get(uuid)
     return task
 end
 
+---@param uuid string
+---@return boolean
+function M.delete(uuid)
+    local result = vim.system({
+        "task",
+        "rc.confirmation=off",
+        uuid,
+        "delete",
+    }, {
+        text = true,
+    }):wait()
+
+    if result.code ~= 0 then
+        local message = result.stderr
+
+        if message == "" then
+            message = result.stdout
+        end
+
+        vim.notify(message, vim.log.levels.ERROR)
+        return false
+    end
+
+    return true
+end
+
 return M

@@ -24,6 +24,7 @@ local function check_keymaps()
     local commands = {
         add = true,
         sync = true,
+        delete = true,
     }
 
     for name, lhs in pairs(keymaps) do
