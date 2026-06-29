@@ -1,6 +1,7 @@
 local M = {}
 
 local add = require("taskmd.add")
+local config = require("taskmd.config")
 local sync = require("taskmd.sync")
 
 local cmdlist = {
@@ -12,6 +13,25 @@ local cmdlist = {
         sync.refresh()
     end,
 }
+
+---@param opts? TaskMDOptions
+function M.setup(opts)
+    config.setup(opts or {})
+
+    local keymaps = config.options.keymaps
+
+    if keymaps then
+        for name, lhs in pairs(keymaps) do
+            local keymap = cmdlist[name]
+
+            if keymap then
+                vim.keymap.set("n", lhs, keymap, {
+                    desc = "TaskMD " .. name,
+                })
+            end
+        end
+    end
+end
 
 vim.api.nvim_create_user_command("TaskMD", function(opts)
     local cmd = cmdlist[opts.fargs[1]]
