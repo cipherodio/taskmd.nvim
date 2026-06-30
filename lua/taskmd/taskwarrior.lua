@@ -210,17 +210,7 @@ end
 
 ---@param uuid string
 ---@return boolean
----@return table<string, any>?
 function M.done(uuid)
-    local task = M.get(uuid)
-    local parent
-
-    if task and type(task.parent) == "string" then
-        parent = get_task(task.parent)
-    elseif task and task.status == "recurring" then
-        parent = task
-    end
-
     local result = vim.system({
         "task",
         "rc.confirmation=off",
@@ -232,19 +222,10 @@ function M.done(uuid)
 
     if result.code ~= 0 then
         shared.notify_error(result)
-        return false, nil
+        return false
     end
 
-    if parent then
-        local child = find_pending_child(parent)
-
-        if child then
-            copy_recur(child, parent)
-            return true, child
-        end
-    end
-
-    return true, nil
+    return true
 end
 
 ---@return table[]?

@@ -1,5 +1,3 @@
-local render = require("taskmd.render")
-local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
@@ -27,23 +25,10 @@ function M.done()
         return
     end
 
-    local ok, next_task = taskwarrior.done(uuid)
+    local ok = taskwarrior.done(uuid)
 
     if not ok then
         return
-    end
-
-    if next_task then
-        local item = shared.to_item(next_task)
-
-        if item then
-            vim.api.nvim_buf_set_lines(0, row - 1, row, false, {
-                render.line(item),
-            })
-
-            vim.notify("TaskMD completed task and added next recurrence.")
-            return
-        end
     end
 
     vim.api.nvim_buf_set_lines(0, row - 1, row, false, {})
