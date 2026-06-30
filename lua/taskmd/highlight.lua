@@ -8,55 +8,83 @@ local group = vim.api.nvim_create_augroup("taskmd_highlight", {
     clear = true,
 })
 
+---@type table<string, string>
+local default_colors = {
+    scheduled = "#b8bb26",
+    due = "#fb4934",
+    date = "#fabd2f",
+    marker = "#83a598",
+    duration = "#689d6a",
+    rec = "#d3869b",
+    uuid = "#928374",
+}
+
+---@return boolean
+local function is_enabled()
+    local highlight = config.options.highlight
+
+    return highlight ~= nil and highlight.enable ~= false
+end
+
+---@param name string
+---@return string
+local function color(name)
+    local highlight = config.options.highlight or {}
+    local overrides = highlight.overrides or {}
+    local value = overrides[name]
+
+    if type(value) == "string" and value ~= "" then
+        return value
+    end
+
+    local fallback = default_colors[name]
+
+    if type(fallback) == "string" then
+        return fallback
+    end
+
+    return "#ffffff"
+end
+
 local function set_highlights()
     vim.api.nvim_set_hl(0, "TaskMDScheduled", {
-        fg = "#b8bb26",
-        default = true,
+        fg = color("scheduled"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDDue", {
-        fg = "#fb4934",
-        default = true,
+        fg = color("due"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDDate", {
-        fg = "#fabd2f",
-        default = true,
+        fg = color("date"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDAt", {
-        fg = "#83a598",
-        default = true,
+        fg = color("marker"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDTime", {
-        fg = "#fabd2f",
-        default = true,
+        fg = color("date"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDIn", {
-        fg = "#83a598",
-        default = true,
+        fg = color("marker"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDDuration", {
-        fg = "#689d6a",
-        default = true,
+        fg = color("duration"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDRecur", {
-        fg = "#d3869b",
-        default = true,
+        fg = color("rec"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDRecurValue", {
-        fg = "#fabd2f",
-        default = true,
+        fg = color("date"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDUuid", {
-        fg = "#928374",
-        default = true,
+        fg = color("uuid"),
     })
 end
 
@@ -112,14 +140,14 @@ end
 ---@param from integer
 ---@return integer?
 local function next_marker(line, from)
-    local recur_start = line:find("%s+recur:", from)
+    local rec_start = line:find("%s+rec:", from)
     local uuid_start = line:find("%s+uuid:", from)
 
-    if recur_start and uuid_start then
-        return math.min(recur_start, uuid_start)
+    if rec_start and uuid_start then
+        return math.min(rec_start, uuid_start)
     end
 
-    return recur_start or uuid_start
+    return rec_start or uuid_start
 end
 
 ---@param bufnr integer
@@ -196,7 +224,7 @@ function M.refresh(bufnr)
 
     vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 
-    if not config.options.highlight then
+    if not is_enabled() then
         return
     end
 
@@ -214,7 +242,7 @@ function M.setup()
 
     set_highlights()
 
-    if not config.options.highlight then
+    if not is_enabled() then
         return
     end
 
