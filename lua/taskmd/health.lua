@@ -25,6 +25,7 @@ local function check_keymaps()
         add = true,
         sync = true,
         delete = true,
+        done = true,
         fetch = true,
     }
 

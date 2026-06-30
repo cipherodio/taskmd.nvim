@@ -2,6 +2,7 @@ local M = {}
 
 local add = require("taskmd.add")
 local config = require("taskmd.config")
+local done = require("taskmd.done")
 local fetch = require("taskmd.fetch")
 local remove = require("taskmd.delete")
 local sync = require("taskmd.sync")
@@ -18,6 +19,10 @@ local cmdlist = {
 
     delete = function()
         remove.delete()
+    end,
+
+    done = function()
+        done.done()
     end,
 
     fetch = function()

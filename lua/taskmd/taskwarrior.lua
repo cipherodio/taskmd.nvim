@@ -208,6 +208,26 @@ function M.delete(uuid)
     return true
 end
 
+---@param uuid string
+---@return boolean
+function M.done(uuid)
+    local result = vim.system({
+        "task",
+        "rc.confirmation=off",
+        uuid,
+        "done",
+    }, {
+        text = true,
+    }):wait()
+
+    if result.code ~= 0 then
+        shared.notify_error(result)
+        return false
+    end
+
+    return true
+end
+
 ---@return table[]?
 function M.pending()
     local result = vim.system({
