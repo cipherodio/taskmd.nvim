@@ -1,4 +1,5 @@
 local config = require("taskmd.config")
+local shared = require("taskmd.shared")
 local sync = require("taskmd.sync")
 
 local M = {}
@@ -19,7 +20,9 @@ end
 ---@param bufnr integer
 ---@return boolean
 local function matches_file(bufnr)
-    if not config.options.sync_on_open then
+    local sync_on_open = config.options.sync_on_open
+
+    if not sync_on_open or not sync_on_open.enable then
         return false
     end
 
@@ -81,7 +84,13 @@ local function sync_buffer(bufnr)
         })
 
         if not was_modified and vim.api.nvim_buf_is_valid(bufnr) then
-            vim.bo[bufnr].modified = false
+            local sync_on_open = config.options.sync_on_open
+
+            if sync_on_open and sync_on_open.autowrite then
+                shared.write_buffer(bufnr, true)
+            else
+                vim.bo[bufnr].modified = false
+            end
         end
     end, 100)
 end

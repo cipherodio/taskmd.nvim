@@ -72,8 +72,9 @@ function M.to_item(task)
 end
 
 ---@param bufnr? integer
-function M.write_buffer(bufnr)
-    if not config.options.write_on_command then
+---@param force? boolean
+function M.write_buffer(bufnr, force)
+    if not force and not config.options.write_on_command then
         return
     end
 
@@ -96,7 +97,7 @@ function M.write_buffer(bufnr)
     end
 
     local ok, err = pcall(vim.api.nvim_buf_call, bufnr, function()
-        vim.cmd("silent write")
+        vim.cmd("silent noautocmd write")
     end)
 
     if not ok then

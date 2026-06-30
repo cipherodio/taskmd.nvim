@@ -1,5 +1,9 @@
+---@class TaskMDSyncOnOpenOptions
+---@field enable? boolean
+---@field autowrite? boolean
+
 ---@class TaskMDOptions
----@field sync_on_open? boolean
+---@field sync_on_open? TaskMDSyncOnOpenOptions
 ---@field file_path? string|string[]
 ---@field short_uuid? boolean
 ---@field write_on_command? boolean
@@ -10,7 +14,11 @@ local M = {}
 
 ---@type TaskMDOptions
 M.options = {
-    sync_on_open = false,
+    sync_on_open = {
+        enable = false,
+        autowrite = false,
+    },
+
     file_path = nil,
     short_uuid = false,
     write_on_command = false,
