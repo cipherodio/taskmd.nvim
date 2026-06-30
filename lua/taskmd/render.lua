@@ -55,7 +55,9 @@ function M.line(task)
             table.insert(parts, ("%s:%s"):format(kind, display_date))
         end
 
-        table.insert(parts, "@" .. display_time)
+        if not (kind == "due" and display_time == "12:00am") then
+            table.insert(parts, "@" .. display_time)
+        end
 
         if left then
             table.insert(parts, "in:" .. left)
