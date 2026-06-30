@@ -7,7 +7,7 @@ local M = {}
 ---@param line string
 ---@return string?
 local function get_uuid(line)
-    return line:match("uuid:([%w%-]+)")
+    return line:match("id:([%w%-]+)")
 end
 
 ---@param bufnr integer

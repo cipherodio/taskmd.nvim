@@ -8,7 +8,7 @@ local M = {}
 ---@param line string
 ---@return string?
 local function get_uuid(line)
-    return line:match("uuid:([%w%-]+)")
+    return line:match("id:([%w%-]+)")
 end
 
 ---@param line string
@@ -37,14 +37,14 @@ local function replace_time_left(line, left)
     if in_start and in_end then
         local search_from = in_end + 1
         local rec_start = line:find("%s+rec:", search_from)
-        local uuid_start = line:find("%s+uuid:", search_from)
+        local id_start = line:find("%s+id:", search_from)
 
         local marker_start
 
-        if rec_start and uuid_start then
-            marker_start = math.min(rec_start, uuid_start)
+        if rec_start and id_start then
+            marker_start = math.min(rec_start, id_start)
         else
-            marker_start = rec_start or uuid_start
+            marker_start = rec_start or id_start
         end
 
         if marker_start then
@@ -54,10 +54,10 @@ local function replace_time_left(line, left)
         return line:sub(1, in_end) .. left
     end
 
-    local uuid_start = line:find("%s+uuid:")
+    local id_start = line:find("%s+id:")
 
-    if uuid_start then
-        return line:sub(1, uuid_start - 1) .. " in:" .. left .. line:sub(uuid_start)
+    if id_start then
+        return line:sub(1, id_start - 1) .. " in:" .. left .. line:sub(id_start)
     end
 
     return line
@@ -66,7 +66,7 @@ end
 ---@param line string
 ---@return string?
 local function update_time_only(line)
-    if not line:match("uuid:") then
+    if not line:match("id:") then
         return nil
     end
 

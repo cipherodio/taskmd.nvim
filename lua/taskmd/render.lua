@@ -81,7 +81,7 @@ function M.line(task)
         table.insert(parts, "rec:" .. display_recur(task.recur))
     end
 
-    table.insert(parts, "uuid:" .. display_uuid(task.uuid))
+    table.insert(parts, "id:" .. display_uuid(task.uuid))
 
     return table.concat(parts, " ")
 end

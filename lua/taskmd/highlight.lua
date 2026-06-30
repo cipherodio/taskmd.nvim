@@ -141,13 +141,13 @@ end
 ---@return integer?
 local function next_marker(line, from)
     local rec_start = line:find("%s+rec:", from)
-    local uuid_start = line:find("%s+uuid:", from)
+    local id_start = line:find("%s+id:", from)
 
-    if rec_start and uuid_start then
-        return math.min(rec_start, uuid_start)
+    if rec_start and id_start then
+        return math.min(rec_start, id_start)
     end
 
-    return rec_start or uuid_start
+    return rec_start or id_start
 end
 
 ---@param bufnr integer
@@ -178,8 +178,8 @@ local function highlight_recur(bufnr, row, line)
     end
 
     local value_start = start_pos + 4
-    local uuid_start = line:find("%s+uuid:", value_start)
-    local value_after = uuid_start or (#line + 1)
+    local id_start = line:find("%s+id:", value_start)
+    local value_after = id_start or (#line + 1)
 
     add(bufnr, row, start_pos - 1, value_start - 1, "TaskMDRecur")
     add(bufnr, row, value_start - 1, value_after - 1, "TaskMDRecurValue")
@@ -189,7 +189,7 @@ end
 ---@param row integer
 ---@param line string
 local function highlight_uuid(bufnr, row, line)
-    local start_pos, end_pos = line:find("uuid:[%w%-]+")
+    local start_pos, end_pos = line:find("id:[%w%-]+")
 
     if not start_pos or not end_pos then
         return
@@ -202,7 +202,7 @@ end
 ---@param row integer
 ---@param line string
 local function highlight_line(bufnr, row, line)
-    if not line:match("uuid:") then
+    if not line:match("id:") then
         return
     end
 

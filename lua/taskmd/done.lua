@@ -6,7 +6,7 @@ local M = {}
 ---@param line string
 ---@return string?
 local function get_uuid(line)
-    return line:match("uuid:([%w%-]+)")
+    return line:match("id:([%w%-]+)")
 end
 
 function M.done()
@@ -15,7 +15,7 @@ function M.done()
     local uuid = get_uuid(line)
 
     if not uuid then
-        vim.notify("TaskMD: no uuid found on current line.", vim.log.levels.ERROR)
+        vim.notify("TaskMD: no id found on current line.", vim.log.levels.ERROR)
         return
     end
 
