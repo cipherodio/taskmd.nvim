@@ -1,3 +1,5 @@
+local highlight = require("taskmd.highlight")
+
 local M = {}
 
 local add = require("taskmd.add")
@@ -49,6 +51,7 @@ function M.setup(opts)
     end
 
     sync_on_open.setup()
+    highlight.setup()
 end
 
 vim.api.nvim_create_user_command("TaskMD", function(opts)
