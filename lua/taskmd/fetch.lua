@@ -84,6 +84,7 @@ function M.fetch()
     end
 
     insert_lines(lines)
+    shared.write_buffer(0)
 
     vim.notify(("TaskMD fetched %d task(s)."):format(#lines))
 end

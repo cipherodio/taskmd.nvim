@@ -1,3 +1,4 @@
+local config = require("taskmd.config")
 local date = require("taskmd.utils.date")
 
 local M = {}
@@ -68,6 +69,42 @@ function M.to_item(task)
     end
 
     return item
+end
+
+---@param bufnr? integer
+function M.write_buffer(bufnr)
+    if not config.options.write_on_command then
+        return
+    end
+
+    bufnr = bufnr or 0
+
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+        return
+    end
+
+    if vim.api.nvim_buf_get_name(bufnr) == "" then
+        return
+    end
+
+    if vim.bo[bufnr].readonly or not vim.bo[bufnr].modifiable then
+        return
+    end
+
+    if not vim.bo[bufnr].modified then
+        return
+    end
+
+    local ok, err = pcall(vim.api.nvim_buf_call, bufnr, function()
+        vim.cmd("silent write")
+    end)
+
+    if not ok then
+        vim.notify(
+            ("TaskMD: failed to write buffer: %s"):format(tostring(err)),
+            vim.log.levels.ERROR
+        )
+    end
 end
 
 return M

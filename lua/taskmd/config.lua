@@ -2,6 +2,7 @@
 ---@field sync_on_open? boolean
 ---@field file_path? string|string[]
 ---@field short_uuid? boolean
+---@field write_on_command? boolean
 ---@field keymaps? table<string, string>
 
 local M = {}
@@ -11,6 +12,7 @@ M.options = {
     sync_on_open = false,
     file_path = nil,
     short_uuid = false,
+    write_on_command = false,
 }
 
 ---@param opts? TaskMDOptions

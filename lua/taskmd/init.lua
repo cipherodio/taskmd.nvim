@@ -14,7 +14,7 @@ local cmdlist = {
     end,
 
     sync = function()
-        sync.refresh()
+        sync.refresh({ write = true })
     end,
 
     delete = function()

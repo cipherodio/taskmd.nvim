@@ -1,3 +1,4 @@
+local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
 
 local M = {}
@@ -32,6 +33,7 @@ function M.done()
     end
 
     vim.api.nvim_buf_set_lines(0, row - 1, row, false, {})
+    shared.write_buffer(0)
 
     vim.notify("TaskMD completed task: " .. uuid)
 end

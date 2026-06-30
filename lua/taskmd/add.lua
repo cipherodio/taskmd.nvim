@@ -53,6 +53,7 @@ function M.create()
     local line = render.line(created_item)
 
     insert_line(line)
+    shared.write_buffer(0)
 end
 
 return M

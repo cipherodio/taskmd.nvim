@@ -145,6 +145,7 @@ end
 ---@class TaskMDSyncOptions
 ---@field bufnr? integer
 ---@field quiet? boolean
+---@field write? boolean
 
 ---@param opts? TaskMDSyncOptions
 function M.refresh(opts)
@@ -155,6 +156,10 @@ function M.refresh(opts)
 
     if not opts.quiet then
         vim.notify(("TaskMD synced %d task(s)."):format(changed))
+    end
+
+    if opts.write then
+        shared.write_buffer(bufnr)
     end
 end
 
