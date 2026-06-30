@@ -36,15 +36,15 @@ local function replace_time_left(line, left)
 
     if in_start and in_end then
         local search_from = in_end + 1
-        local recur_start = line:find("%s+recur:", search_from)
+        local rec_start = line:find("%s+rec:", search_from)
         local uuid_start = line:find("%s+uuid:", search_from)
 
         local marker_start
 
-        if recur_start and uuid_start then
-            marker_start = math.min(recur_start, uuid_start)
+        if rec_start and uuid_start then
+            marker_start = math.min(rec_start, uuid_start)
         else
-            marker_start = recur_start or uuid_start
+            marker_start = rec_start or uuid_start
         end
 
         if marker_start then

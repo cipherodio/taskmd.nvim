@@ -78,7 +78,7 @@ function M.line(task)
     end
 
     if task.recur ~= "" then
-        table.insert(parts, "recur:" .. display_recur(task.recur))
+        table.insert(parts, "rec:" .. display_recur(task.recur))
     end
 
     table.insert(parts, "uuid:" .. display_uuid(task.uuid))

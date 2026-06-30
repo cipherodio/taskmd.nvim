@@ -143,13 +143,13 @@ end
 ---@param row integer
 ---@param line string
 local function highlight_recur(bufnr, row, line)
-    local start_pos = line:find("recur:")
+    local start_pos = line:find("rec:")
 
     if not start_pos then
         return
     end
 
-    local value_start = start_pos + 6
+    local value_start = start_pos + 4
     local uuid_start = line:find("%s+uuid:", value_start)
     local value_after = uuid_start or (#line + 1)
 
