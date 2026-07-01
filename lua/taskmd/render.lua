@@ -60,20 +60,10 @@ function M.line(task)
     end
 
     if kind and task.date ~= "" and time then
-        local display_date = date.display_date(task.date)
-        local display_time = date.display_time(time)
         local left = date.time_left(task.date, time)
 
-        if display_date then
-            table.insert(parts, ("%s:%s"):format(kind, display_date))
-        end
-
-        if not (kind == "due" and display_time == "12:00am") then
-            table.insert(parts, "@" .. display_time)
-        end
-
         if left then
-            table.insert(parts, "in:" .. left)
+            table.insert(parts, ("%s:%s"):format(kind, left))
         end
     end
 

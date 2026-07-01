@@ -55,22 +55,6 @@ local function set_highlights()
         fg = color("due"),
     })
 
-    vim.api.nvim_set_hl(0, "TaskMDDate", {
-        fg = color("date"),
-    })
-
-    vim.api.nvim_set_hl(0, "TaskMDAt", {
-        fg = color("marker"),
-    })
-
-    vim.api.nvim_set_hl(0, "TaskMDTime", {
-        fg = color("date"),
-    })
-
-    vim.api.nvim_set_hl(0, "TaskMDIn", {
-        fg = color("marker"),
-    })
-
     vim.api.nvim_set_hl(0, "TaskMDDuration", {
         fg = color("duration"),
     })
@@ -105,37 +89,6 @@ local function add(bufnr, row, start_col, end_col, hl_group)
     })
 end
 
----@param bufnr integer
----@param row integer
----@param line string
----@param name string
----@param hl_group string
-local function highlight_date_field(bufnr, row, line, name, hl_group)
-    local start_pos, _, date_start, _, date_after =
-        line:find(name .. ":()([a-z]+%-%d%d%-%d%d%d%d)()")
-
-    if not start_pos then
-        return
-    end
-
-    add(bufnr, row, start_pos - 1, start_pos + #name, hl_group)
-    add(bufnr, row, date_start - 1, date_after - 1, "TaskMDDate")
-end
-
----@param bufnr integer
----@param row integer
----@param line string
-local function highlight_time(bufnr, row, line)
-    local start_pos, _, time = line:find("@(%d+:%d%d[ap]m)")
-
-    if not start_pos then
-        return
-    end
-
-    add(bufnr, row, start_pos - 1, start_pos, "TaskMDAt")
-    add(bufnr, row, start_pos, start_pos + #time, "TaskMDTime")
-end
-
 ---@param line string
 ---@param from integer
 ---@return integer?
@@ -153,17 +106,19 @@ end
 ---@param bufnr integer
 ---@param row integer
 ---@param line string
-local function highlight_in(bufnr, row, line)
-    local start_pos = line:find("in:")
+---@param name string
+---@param hl_group string
+local function highlight_status(bufnr, row, line, name, hl_group)
+    local start_pos = line:find(name .. ":")
 
     if not start_pos then
         return
     end
 
-    local value_start = start_pos + 3
+    local value_start = start_pos + #name + 1
     local value_after = next_marker(line, value_start) or (#line + 1)
 
-    add(bufnr, row, start_pos - 1, value_start - 1, "TaskMDIn")
+    add(bufnr, row, start_pos - 1, value_start - 1, hl_group)
     add(bufnr, row, value_start - 1, value_after - 1, "TaskMDDuration")
 end
 
@@ -206,10 +161,8 @@ local function highlight_line(bufnr, row, line)
         return
     end
 
-    highlight_date_field(bufnr, row, line, "scheduled", "TaskMDScheduled")
-    highlight_date_field(bufnr, row, line, "due", "TaskMDDue")
-    highlight_time(bufnr, row, line)
-    highlight_in(bufnr, row, line)
+    highlight_status(bufnr, row, line, "scheduled", "TaskMDScheduled")
+    highlight_status(bufnr, row, line, "due", "TaskMDDue")
     highlight_recur(bufnr, row, line)
     highlight_uuid(bufnr, row, line)
 end
