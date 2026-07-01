@@ -27,6 +27,7 @@ function M.create()
         return
     end
 
+    ---@type TaskMDTask
     local item = {
         task = task,
         date = prompt("Date"),

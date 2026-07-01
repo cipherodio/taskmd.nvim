@@ -1,11 +1,10 @@
-local highlight = require("taskmd.highlight")
-
 local M = {}
 
 local add = require("taskmd.add")
 local config = require("taskmd.config")
 local done = require("taskmd.done")
 local fetch = require("taskmd.fetch")
+local highlight = require("taskmd.highlight")
 local remove = require("taskmd.delete")
 local sync = require("taskmd.sync")
 local sync_on_open = require("taskmd.sync_on_open")

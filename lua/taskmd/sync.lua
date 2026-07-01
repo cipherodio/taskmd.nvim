@@ -1,4 +1,3 @@
-local date = require("taskmd.utils.date")
 local render = require("taskmd.render")
 local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
@@ -9,86 +8,6 @@ local M = {}
 ---@return string?
 local function get_uuid(line)
     return line:match("id:([%w%-]+)")
-end
-
----@param line string
----@return string?, string?
-local function get_markdown_time(line)
-    local display_date
-    local display_time
-
-    display_date, display_time =
-        line:match("scheduled:([a-z]+%-%d%d%-%d%d%d%d)%s+@(%d+:%d%d[ap]m)")
-
-    if not display_date then
-        display_date, display_time =
-            line:match("due:([a-z]+%-%d%d%-%d%d%d%d)%s+@(%d+:%d%d[ap]m)")
-    end
-
-    return display_date, display_time
-end
-
----@param line string
----@param left string
----@return string
-local function replace_time_left(line, left)
-    local in_start, in_end = line:find("%s+in:")
-
-    if in_start and in_end then
-        local search_from = in_end + 1
-        local rec_start = line:find("%s+rec:", search_from)
-        local id_start = line:find("%s+id:", search_from)
-
-        local marker_start
-
-        if rec_start and id_start then
-            marker_start = math.min(rec_start, id_start)
-        else
-            marker_start = rec_start or id_start
-        end
-
-        if marker_start then
-            return line:sub(1, in_end) .. left .. line:sub(marker_start)
-        end
-
-        return line:sub(1, in_end) .. left
-    end
-
-    local id_start = line:find("%s+id:")
-
-    if id_start then
-        return line:sub(1, id_start - 1) .. " in:" .. left .. line:sub(id_start)
-    end
-
-    return line
-end
-
----@param line string
----@return string?
-local function update_time_only(line)
-    if not line:match("id:") then
-        return nil
-    end
-
-    local display_date, display_time = get_markdown_time(line)
-
-    if not (display_date and display_time) then
-        return nil
-    end
-
-    local task_date = date.parse_display_date(display_date)
-
-    if not task_date then
-        return nil
-    end
-
-    local left = date.time_left(task_date, display_time)
-
-    if not left then
-        return nil
-    end
-
-    return replace_time_left(line, left)
 end
 
 ---@param line string
@@ -160,18 +79,6 @@ function M.refresh(opts)
 
     if opts.write then
         shared.write_buffer(bufnr)
-    end
-end
-
----@param opts? TaskMDSyncOptions
-function M.refresh_in_buffer(opts)
-    opts = opts or {}
-
-    local bufnr = opts.bufnr or 0
-    local changed = update_buffer(bufnr, update_time_only)
-
-    if not opts.quiet then
-        vim.notify(("TaskMD refreshed %d task timer(s)."):format(changed))
     end
 end
 

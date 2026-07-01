@@ -1,41 +1,8 @@
 local M = {}
 
-local months = {
-    "january",
-    "february",
-    "march",
-    "april",
-    "may",
-    "june",
-    "july",
-    "august",
-    "september",
-    "october",
-    "november",
-    "december",
-}
-
----@param date string
----@return string?
-function M.display_date(date)
-    local year, month, day = date:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
-
-    if not (year and month and day) then
-        return nil
-    end
-
-    local month_name = months[tonumber(month)]
-
-    if not month_name then
-        return nil
-    end
-
-    return ("%s-%s-%s"):format(month_name, day, year)
-end
-
 ---@param time string
 ---@return string
-function M.display_time(time)
+local function display_time(time)
     return (time:lower():gsub("%s+", ""))
 end
 
@@ -141,7 +108,7 @@ function M.time_left(date, time)
         return nil
     end
 
-    local minutes = time_to_24h(M.display_time(time))
+    local minutes = time_to_24h(display_time(time))
 
     if not minutes then
         return nil
@@ -187,7 +154,7 @@ function M.task_datetime(date, time)
         return nil
     end
 
-    local minutes = time_to_24h(M.display_time(time))
+    local minutes = time_to_24h(display_time(time))
 
     if not minutes then
         return nil
@@ -205,39 +172,6 @@ function M.task_datetime(date, time)
     local min = minutes % 60
 
     return ("%04d-%02d-%02dT%02d:%02d"):format(y, m, d, hour, min)
-end
-
-local month_numbers = {
-    january = "01",
-    february = "02",
-    march = "03",
-    april = "04",
-    may = "05",
-    june = "06",
-    july = "07",
-    august = "08",
-    september = "09",
-    october = "10",
-    november = "11",
-    december = "12",
-}
-
----@param display_date string
----@return string?
-function M.parse_display_date(display_date)
-    local month, day, year = display_date:match("^([a-z]+)%-(%d%d)%-(%d%d%d%d)$")
-
-    if not (month and day and year) then
-        return nil
-    end
-
-    local month_number = month_numbers[month]
-
-    if not month_number then
-        return nil
-    end
-
-    return ("%s-%s-%s"):format(year, month_number, day)
 end
 
 ---@param hour integer

@@ -255,6 +255,16 @@ function M.pending()
         return nil
     end
 
+    for _, task in ipairs(decoded) do
+        if type(task) == "table" and type(task.parent) == "string" then
+            local parent = get_task(task.parent)
+
+            if parent then
+                copy_recur(task, parent)
+            end
+        end
+    end
+
     return decoded
 end
 

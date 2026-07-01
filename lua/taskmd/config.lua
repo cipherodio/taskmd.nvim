@@ -5,11 +5,10 @@
 ---@class TaskMDHighlightOverrides
 ---@field scheduled? string
 ---@field due? string
----@field date? string
----@field marker? string
 ---@field duration? string
 ---@field rec? string
----@field uuid? string
+---@field rec_value? string
+---@field id? string
 
 ---@class TaskMDHighlightOptions
 ---@field enable? boolean

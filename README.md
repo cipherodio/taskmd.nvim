@@ -9,10 +9,11 @@ description: Markdown + Taskwarrior integration for Neovim.
 - Add Taskwarrior tasks from Neovim
 - Fetch pending Taskwarrior tasks into Markdown
 - Sync Markdown task lines from Taskwarrior
-- Mark task as done from Markdown
+- Mark tasks as done from Markdown
 - Delete Taskwarrior tasks from Markdown
 - Support recurring Taskwarrior tasks
 - Optionally sync configured files once when opened
+- Optional highlighting for TaskMD task metadata
 
 ## Requirements
 
@@ -37,21 +38,19 @@ vim.pack.add({
 require("taskmd").setup({
     file_path = {
         "~/example/agenda.md",
-        "~/example/task.md"
+        "~/example/task.md",
     },
-    -- auto sync with Taskwarrior
+
     sync_on_open = {
         enable = true,
         autowrite = true,
     },
-    -- auto write after commands
+
     write_on_command = true,
-    -- short output of uuid: in markdown file
     short_uuid = true,
-    -- enable colors
+
     highlight = {
         enable = true,
-        -- color overrides, if not set will use the default
         overrides = {
             scheduled = "",
             due = "",
@@ -61,6 +60,7 @@ require("taskmd").setup({
             uuid = "",
         },
     },
+
     keymaps = {
         add = "<leader>ta",
         sync = "<leader>ts",
@@ -118,8 +118,10 @@ Tags:
 Example Markdown output:
 
 ```md
-- Pay bills due:july-07-2026 @12:00am in:6d recur:monthly uuid:8a6d2134
+- Pay bills due:4d 12h rec:m id:8a6d2134
 ```
+
+The duration depends on the current time when the task is rendered.
 
 ## Sync on open
 
@@ -127,12 +129,17 @@ When `sync_on_open` is enabled, TaskMD silently syncs configured files
 once when they are opened.
 
 ```lua
-sync_on_open = true
+require("taskmd").setup({
+    file_path = {
+        "~/hub/src/mdnotes/agenda.md",
+        "~/hub/src/mdnotes/todo.md",
+    },
 
-file_path = {
-    "~/hub/src/mdnotes/agenda.md",
-    "~/hub/src/mdnotes/todo.md",
-}
+    sync_on_open = {
+        enable = true,
+        autowrite = true,
+    },
+})
 ```
 
 To sync manually:
