@@ -2,7 +2,7 @@
 ---@field enable? boolean
 ---@field autowrite? boolean
 
----@class TaskMDHighlightOverrides
+---@class TaskMDFileOutputHighlightOverrides
 ---@field scheduled? string
 ---@field due? string
 ---@field duration? string
@@ -10,9 +10,25 @@
 ---@field rec_value? string
 ---@field id? string
 
----@class TaskMDHighlightOptions
+---@class TaskMDFileOutputHighlightOptions
 ---@field enable? boolean
----@field overrides? TaskMDHighlightOverrides
+---@field overrides? TaskMDFileOutputHighlightOverrides
+
+---@class TaskMDCalendarHighlightOverrides
+---@field month? string
+---@field weekday? string
+---@field day? string
+---@field today? string
+---@field due? string
+---@field scheduled? string
+---@field sched_due? string
+
+---@class TaskMDCalendarHighlightOptions
+---@field overrides? TaskMDCalendarHighlightOverrides
+
+---@class TaskMDHighlightOptions
+---@field file_output? TaskMDFileOutputHighlightOptions
+---@field calendar? TaskMDCalendarHighlightOptions
 
 ---@class TaskMDOptions
 ---@field sync_on_open? TaskMDSyncOnOpenOptions
@@ -36,8 +52,14 @@ M.options = {
     write_on_command = false,
 
     highlight = {
-        enable = true,
-        overrides = {},
+        file_output = {
+            enable = true,
+            overrides = {},
+        },
+
+        calendar = {
+            overrides = {},
+        },
     },
 }
 

@@ -12,25 +12,26 @@ local group = vim.api.nvim_create_augroup("taskmd_highlight", {
 local default_colors = {
     scheduled = "#b8bb26",
     due = "#fb4934",
-    date = "#fabd2f",
-    marker = "#83a598",
     duration = "#689d6a",
     rec = "#d3869b",
-    uuid = "#928374",
+    rec_value = "#fabd2f",
+    id = "#928374",
 }
 
 ---@return boolean
 local function is_enabled()
-    local highlight = config.options.highlight
+    local highlight = config.options.highlight or {}
+    local file_output = highlight.file_output
 
-    return highlight ~= nil and highlight.enable ~= false
+    return file_output ~= nil and file_output.enable ~= false
 end
 
 ---@param name string
 ---@return string
 local function color(name)
     local highlight = config.options.highlight or {}
-    local overrides = highlight.overrides or {}
+    local file_output = highlight.file_output or {}
+    local overrides = file_output.overrides or {}
     local value = overrides[name]
 
     if type(value) == "string" and value ~= "" then
@@ -64,11 +65,11 @@ local function set_highlights()
     })
 
     vim.api.nvim_set_hl(0, "TaskMDRecurValue", {
-        fg = color("date"),
+        fg = color("rec_value"),
     })
 
-    vim.api.nvim_set_hl(0, "TaskMDUuid", {
-        fg = color("uuid"),
+    vim.api.nvim_set_hl(0, "TaskMDId", {
+        fg = color("id"),
     })
 end
 
@@ -143,14 +144,14 @@ end
 ---@param bufnr integer
 ---@param row integer
 ---@param line string
-local function highlight_uuid(bufnr, row, line)
+local function highlight_id(bufnr, row, line)
     local start_pos, end_pos = line:find("id:[%w%-]+")
 
     if not start_pos or not end_pos then
         return
     end
 
-    add(bufnr, row, start_pos - 1, end_pos, "TaskMDUuid")
+    add(bufnr, row, start_pos - 1, end_pos, "TaskMDId")
 end
 
 ---@param bufnr integer
@@ -164,7 +165,7 @@ local function highlight_line(bufnr, row, line)
     highlight_status(bufnr, row, line, "scheduled", "TaskMDScheduled")
     highlight_status(bufnr, row, line, "due", "TaskMDDue")
     highlight_recur(bufnr, row, line)
-    highlight_uuid(bufnr, row, line)
+    highlight_id(bufnr, row, line)
 end
 
 ---@param bufnr? integer

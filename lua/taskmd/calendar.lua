@@ -1,3 +1,4 @@
+local config = require("taskmd.config")
 local date = require("taskmd.utils.date")
 local taskwarrior = require("taskmd.taskwarrior")
 
@@ -22,15 +23,37 @@ local month_names = {
 
 local width = 20
 
-local colors = {
+---@type table<string, string>
+local default_colors = {
     month = "#fe8019",
     weekday = "#fabd2f",
     day = "#ebdbb2",
     today = "#83a598",
     due = "#fb4934",
     scheduled = "#b8bb26",
-    both = "#8ec07c",
+    sched_due = "#8ec07c",
 }
+
+---@param name string
+---@return string
+local function color(name)
+    local highlight = config.options.highlight or {}
+    local calendar = highlight.calendar or {}
+    local overrides = calendar.overrides or {}
+    local value = overrides[name]
+
+    if type(value) == "string" and value ~= "" then
+        return value
+    end
+
+    local fallback = default_colors[name]
+
+    if type(fallback) == "string" then
+        return fallback
+    end
+
+    return "#ffffff"
+end
 
 ---@class TaskMDCalendarMark
 ---@field due? boolean
@@ -44,31 +67,31 @@ local colors = {
 
 local function set_highlights()
     vim.api.nvim_set_hl(0, "TaskMDCalendarMonth", {
-        fg = colors.month,
+        fg = color("month"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarWeekday", {
-        fg = colors.weekday,
+        fg = color("weekday"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarDay", {
-        fg = colors.day,
+        fg = color("day"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarToday", {
-        fg = colors.today,
+        fg = color("today"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarDue", {
-        fg = colors.due,
+        fg = color("due"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarScheduled", {
-        fg = colors.scheduled,
+        fg = color("scheduled"),
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarBoth", {
-        fg = colors.both,
+        fg = color("sched_due"),
     })
 end
 
