@@ -1,6 +1,7 @@
 local M = {}
 
 local add = require("taskmd.add")
+local calendar = require("taskmd.calendar")
 local config = require("taskmd.config")
 local done = require("taskmd.done")
 local fetch = require("taskmd.fetch")
@@ -28,6 +29,10 @@ local cmdlist = {
 
     fetch = function()
         fetch.fetch()
+    end,
+
+    calendar = function()
+        calendar.open()
     end,
 }
 

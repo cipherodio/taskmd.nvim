@@ -27,6 +27,7 @@ local function check_keymaps()
         delete = true,
         done = true,
         fetch = true,
+        calendar = true,
     }
 
     for name, lhs in pairs(keymaps) do
