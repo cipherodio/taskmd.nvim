@@ -12,7 +12,9 @@ description: Markdown + Taskwarrior integration for Neovim.
 - Mark tasks as done from Markdown
 - Delete Taskwarrior tasks from Markdown
 - Support recurring Taskwarrior tasks
-- Optionally sync configured files once when opened
+- Show a Taskwarrior calendar inside Neovim
+- Show current-week due and scheduled tasks in the calendar
+- Optionally sync TaskMD files once when opened
 - Optional highlighting for TaskMD task metadata
 
 ## Requirements
@@ -36,20 +38,34 @@ vim.pack.add({
 
 ```lua
 require("taskmd").setup({
+    -- Root directory where TaskMD is active.
     root_dir = "~/hub/src/mdnotes"
+
+    -- Optional directory or list of directories scanned by fetch
+    -- to avoid duplicate tasks.
     scan_dir = "events",
+
+    -- Default task file used when running commands outside root_dir.
     task_file = "agenda.md",
+
+    -- Sync TaskMD files once when opened.
     sync_on_open = {
         enable = true,
         autowrite = true,
     },
 
+    -- Write the buffer after commands that modify Markdown.
     write_on_command = true,
+
+    -- Show short task IDs in Markdown.
     short_uuid = true,
 
     highlight = {
         file_output = {
             enable = true,
+            -- Optional color overrides for Markdown task metadata.
+            -- Use "#RRGGBB" hex colors or Neovim color names.
+            -- Leave unset, set to nil, or use "" to use the default colors.
             overrides = {
                 scheduled = "",
                 due = "",
@@ -59,8 +75,15 @@ require("taskmd").setup({
                 id = "",
             },
         },
+        -- Floating calendar
         calendar = {
+            -- Values: "none", "single", "double", "rounded", "solid", "shadow"
+            border = "single",
+            -- Optional color overrides for the calendar.
+            -- Use "#RRGGBB" hex colors or Neovim color names.
+            -- Leave unset, set to nil, or use "" to use the default colors.
             overrides = {
+                -- Calendar
                 month = "",
                 weekday = "",
                 day = "",
@@ -68,33 +91,52 @@ require("taskmd").setup({
                 due = "",
                 scheduled = "",
                 sched_due = "",
+                -- Current-week task list
+                this_week = "",
+                week_date = "",
+                week_task = "",
+                week_time = "",
             },
         },
     },
 
     keymaps = {
-        add = "<leader>ta",
-        sync = "<leader>ts",
-        delete = "<leader>tx",
-        done = "<leader>td",
-        fetch = "<leader>tf",
-        calendar = "<leader>tc",
+        add = "<leader>ta", -- :TaskMD add
+        sync = "<leader>ts", -- :TaskMD sync
+        delete = "<leader>tx", -- :TaskMD delete
+        done = "<leader>td", -- TaskMD done
+        fetch = "<leader>tf", -- TaskMD fetch
+        calendar = "<leader>tc", -- TaskMD calendar
     },
 })
 ```
 
-## Commands
+## Command behavior
 
-```vim
+```text
 :TaskMD add
+    inside root_dir  -> insert at cursor in current file
+    outside root_dir -> append to task_file
+
 :TaskMD sync
-:TaskMD delete
-:TaskMD done
+    inside root_dir  -> sync current file
+    outside root_dir -> sync task_file
+
 :TaskMD fetch
+    inside root_dir  -> insert missing tasks at cursor in current file
+    outside root_dir -> append missing tasks to task_file
+
+:TaskMD done
+    mark the task on the current line as done, then remove the line
+
+:TaskMD delete
+    delete the task on the current line, then remove the line
+
 :TaskMD calendar
+    open the TaskMD calendar
 ```
 
-## Example
+## Adding a task
 
 Running:
 
@@ -119,9 +161,9 @@ Example input:
 
 ```text
 Task: Pay bills
-Date:
+Date: 2026-07-07
 Scheduled:
-Due: 7th
+Due: 05:30pm
 Recur: monthly
 Project: bills
 Priority: H
@@ -136,53 +178,34 @@ Example Markdown output:
 
 The duration depends on the current time when the task is rendered.
 
-## Sync on open
+## Highlight groups
 
-When `sync_on_open` is enabled, TaskMD silently syncs configured files
-once when they are opened.
-
-```lua
-require("taskmd").setup({
-    root_dir = "~/hub/src/mdnotes",
-    scan_dir = "events",
-    task_file = "agenda.md",
-    sync_on_open = {
-        enable = true,
-        autowrite = true,
-    },
-})
-```
-
-To sync manually:
-
-```vim
-:TaskMD sync
-```
-
-## Recurring tasks
-
-Taskwarrior recurring tasks create two records:
+Markdown task output:
 
 ```text
-R = recurring parent/template
-P = pending child/current task
+TaskMDScheduled
+TaskMDDue
+TaskMDDuration
+TaskMDRecur
+TaskMDRecurValue
+TaskMDId
 ```
 
-TaskMD stores the UUID of the pending child task.
+Calendar:
 
-This is normal Taskwarrior behavior. Use:
-
-```sh
-task
+```text
+TaskMDCalendarMonth
+TaskMDCalendarWeekday
+TaskMDCalendarDay
+TaskMDCalendarToday
+TaskMDCalendarDue
+TaskMDCalendarScheduled
+TaskMDCalendarBoth
+TaskMDCalendarThisWeek
+TaskMDCalendarWeekDate
+TaskMDCalendarWeekTask
+TaskMDCalendarWeekTime
 ```
-
-to see normal pending tasks, and:
-
-```sh
-task all
-```
-
-to see everything, including recurring parents/templates.
 
 ## Healthcheck
 
