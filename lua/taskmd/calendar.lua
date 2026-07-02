@@ -52,7 +52,7 @@ local function color(name)
         return fallback
     end
 
-    return "#ffffff"
+    return "NONE"
 end
 
 ---@class TaskMDCalendarMark
