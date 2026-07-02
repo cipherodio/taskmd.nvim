@@ -35,16 +35,11 @@ function M.root_dir()
     return M.normalize(root_dir)
 end
 
+---@param value string
 ---@return string?
-function M.task_file()
-    local task_file = config.options.task_file
-
-    if type(task_file) ~= "string" or task_file == "" then
-        return nil
-    end
-
-    if is_absolute(task_file) then
-        return M.normalize(task_file)
+local function resolve_from_root(value)
+    if is_absolute(value) then
+        return M.normalize(value)
     end
 
     local root_dir = M.root_dir()
@@ -53,7 +48,69 @@ function M.task_file()
         return nil
     end
 
-    return M.normalize(root_dir .. "/" .. task_file)
+    return M.normalize(root_dir .. "/" .. value)
+end
+
+---@return string?
+function M.task_file()
+    local task_file = config.options.task_file
+
+    if type(task_file) ~= "string" or task_file == "" then
+        return nil
+    end
+
+    return resolve_from_root(task_file)
+end
+
+---@return string[]
+function M.scan_dirs()
+    local scan_dir = config.options.scan_dir
+    local dirs = {}
+
+    if type(scan_dir) == "string" and scan_dir ~= "" then
+        local resolved = resolve_from_root(scan_dir)
+
+        if resolved then
+            table.insert(dirs, resolved)
+        end
+
+        return dirs
+    end
+
+    if type(scan_dir) == "table" then
+        for _, dir in ipairs(scan_dir) do
+            if type(dir) == "string" and dir ~= "" then
+                local resolved = resolve_from_root(dir)
+
+                if resolved then
+                    table.insert(dirs, resolved)
+                end
+            end
+        end
+    end
+
+    return dirs
+end
+
+---@return string[]
+function M.scan_files()
+    local found = {}
+    local seen = {}
+
+    for _, dir in ipairs(M.scan_dirs()) do
+        local files = vim.fn.globpath(dir, "**/*.md", false, true)
+
+        for _, file in ipairs(files) do
+            local normalized = M.normalize(file)
+
+            if not seen[normalized] then
+                seen[normalized] = true
+                table.insert(found, normalized)
+            end
+        end
+    end
+
+    return found
 end
 
 ---@param bufnr integer

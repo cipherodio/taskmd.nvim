@@ -36,11 +36,9 @@ vim.pack.add({
 
 ```lua
 require("taskmd").setup({
-    file_path = {
-        "~/hub/src/mdnotes/agenda.md",
-        "~/hub/src/mdnotes/task.md",
-    },
-
+    root_dir = "~/hub/src/mdnotes"
+    scan_dir = "events",
+    task_file = "agenda.md",
     sync_on_open = {
         enable = true,
         autowrite = true,
@@ -145,11 +143,9 @@ once when they are opened.
 
 ```lua
 require("taskmd").setup({
-    file_path = {
-        "~/hub/src/mdnotes/agenda.md",
-        "~/hub/src/mdnotes/todo.md",
-    },
-
+    root_dir = "~/hub/src/mdnotes",
+    scan_dir = "events",
+    task_file = "agenda.md",
     sync_on_open = {
         enable = true,
         autowrite = true,

@@ -66,18 +66,64 @@ local function target()
     }
 end
 
----@param bufnr integer
----@return table<string, boolean>
-local function existing_uuids(bufnr)
-    local found = {}
-    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-
+---@param lines string[]
+---@param found table<string, boolean>
+local function collect_uuids_from_lines(lines, found)
     for _, line in ipairs(lines) do
         local uuid = get_uuid(line)
 
         if uuid then
             found[uuid] = true
         end
+    end
+end
+
+---@param found table<string, boolean>
+local function collect_uuids_from_loaded_buffers(found)
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(bufnr) and path.is_inside_root(bufnr) then
+            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+            collect_uuids_from_lines(lines, found)
+        end
+    end
+end
+
+---@param file string
+---@param found table<string, boolean>
+local function collect_uuids_from_file(file, found)
+    local bufnr = vim.fn.bufnr(file)
+
+    if bufnr ~= -1 and vim.api.nvim_buf_is_loaded(bufnr) then
+        local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+        collect_uuids_from_lines(lines, found)
+        return
+    end
+
+    local ok, lines = pcall(vim.fn.readfile, file)
+
+    if not ok or type(lines) ~= "table" then
+        return
+    end
+
+    collect_uuids_from_lines(lines, found)
+end
+
+---@return table<string, boolean>
+local function existing_uuids()
+    local found = {}
+
+    collect_uuids_from_loaded_buffers(found)
+
+    local task_file = path.task_file()
+
+    if task_file then
+        collect_uuids_from_file(task_file, found)
+    end
+
+    for _, file in ipairs(path.scan_files()) do
+        collect_uuids_from_file(file, found)
     end
 
     return found
@@ -143,13 +189,14 @@ function M.fetch()
     end
 
     if
-        vim.bo[fetch_target.bufnr].readonly or not vim.bo[fetch_target.bufnr].modifiable
+        vim.bo[fetch_target.bufnr].readonly
+        or not vim.bo[fetch_target.bufnr].modifiable
     then
         vim.notify("TaskMD: target file is not writable.", vim.log.levels.ERROR)
         return
     end
 
-    local existing = existing_uuids(fetch_target.bufnr)
+    local existing = existing_uuids()
     local tasks = taskwarrior.pending()
 
     if not tasks then

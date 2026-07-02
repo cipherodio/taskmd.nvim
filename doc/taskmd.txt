@@ -55,10 +55,9 @@ SETUP				    *taskmd-setup*
 Example configuration:
 >lua
     require("taskmd").setup({
-	file_path = {
-	    "~/hub/src/mdnotes/agenda.md",
-	    "~/hub/src/mdnotes/todo.md",
-	},
+	root_dir = "~/hub/src/mdnotes",
+	scan_dir = "events",
+	task_file = "agenda.md",
 	sync_on_open = {
 	    enable = true,
 	    autowrite = true,
@@ -279,8 +278,8 @@ runs:
 CONFIGURATION			    *taskmd-configuration*
 
 `sync_on_open` enables silent sync, and `autowrite` enables autowrite
-to file after sync when opening configured files.
-						*taskmd-sync_on_open*
+to file after sync when opening files inside |taskmd-root-dir|.
+						*taskmd-sync_on_open-option*
 
 Example:
 >lua
@@ -289,19 +288,59 @@ Example:
 	autowrite = true,
     }
 <
-If enabled, TaskMD syncs the file once, then autowrite after opening it.
+If enabled, TaskMD syncs the file once after opening it when the file
+is inside |taskmd-root-dir|.
 
 ------------------------------------------------------------------------------
-`file_path` is the file or list of files used by sync_on_open.
-						*taskmd-file_path*
+`root_dir` is the root directory where TaskMD command & highlights are active.
+						*taskmd-root-dir*
 Example:
 >lua
-    file_path = {
-    "~/hub/src/mdnotes/agenda.md",
-    "~/hub/src/mdnotes/todo.md",
+    root_dir = "~/hub/src/mdnotes"
+<
+TaskMD treats files inside this directory and its subdirectories as TaskMD
+Markdown files.
+
+------------------------------------------------------------------------------
+`task_file` global output file used when running commands outside
+|taskmd-root-dir|.
+						*taskmd-task-file*
+Example:
+>lua
+    task_file = 'agenda.md'
+<
+Relative paths are resolved from |taskmd-root-dir|.
+
+Example:
+>lua
+    root_dir = "~/hub/src/mdnotes"
+    task_file = "agenda.md"
+<
+This resolves to:
+>
+    ~/hub/src/mdnotes/agenda.md
+<
+------------------------------------------------------------------------------
+`scan_dir` optional directoy or list of directories scanned by |:TaskMD-fetch|
+to avoid fetching duplicate tasks.
+						*taskmd-scan-dir*
+Example:
+>lua
+    scan_dir = "events"
+<
+This scans:
+>
+    ~/hub/src/mdnotes/events/**/*.md
+<
+Example with multiple scan directories:
+>lua
+    scan_dir = {
+	"events",
+	"projects"
     }
 <
-If `file_path` is missing, sync_on_open does nothing.
+If `scan_dir` is not configured, TaskMD only checks the target file and loaded
+TaskMD buffers when fetching tasks.
 
 ------------------------------------------------------------------------------
 `write_on_command` writes the current buffer after TaskMD commands.
@@ -538,10 +577,9 @@ Example:
 	    enable = true,
 	    autowrite = true,
 	},
-	file_path = {
-	    "~/hub/src/mdnotes/agenda.md",
-	    "~/hub/src/mdnotes/todo.md",
-	},
+	root_dir = "~/hub/src/mdnotes",
+	scan_dir = "events",
+	task_file = "agenda.md",
     })
 <
 This runs silently after opening the file.

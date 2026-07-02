@@ -32,6 +32,7 @@
 
 ---@class TaskMDOptions
 ---@field root_dir? string
+---@field scan_dir? string|string[]
 ---@field task_file? string
 ---@field sync_on_open? TaskMDSyncOnOpenOptions
 ---@field short_uuid? boolean
@@ -44,6 +45,7 @@ local M = {}
 ---@type TaskMDOptions
 M.options = {
     root_dir = nil,
+    scan_dir = nil,
     task_file = nil,
 
     sync_on_open = {
