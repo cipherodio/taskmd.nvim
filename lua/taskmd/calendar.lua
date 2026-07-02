@@ -22,6 +22,7 @@ local month_names = {
 }
 
 local width = 20
+local horizontal_padding = 2
 local day_seconds = 24 * 60 * 60
 
 ---@type table<string, string>
@@ -769,6 +770,21 @@ local function append_lines(lines, highlights, extra_lines, extra_highlights)
 end
 
 ---@param lines string[]
+---@param highlights TaskMDCalendarHighlight[]
+local function add_horizontal_padding(lines, highlights)
+    local padding = string.rep(" ", horizontal_padding)
+
+    for i, line in ipairs(lines) do
+        lines[i] = padding .. line .. padding
+    end
+
+    for _, highlight in ipairs(highlights) do
+        highlight.start_col = highlight.start_col + horizontal_padding
+        highlight.end_col = highlight.end_col + horizontal_padding
+    end
+end
+
+---@param lines string[]
 ---@return integer
 local function max_width(lines)
     local longest = 1
@@ -843,6 +859,7 @@ function M.open()
     local week_lines, week_highlights = render_week(tasks)
 
     append_lines(lines, joined_highlights, week_lines, week_highlights)
+    add_horizontal_padding(lines, joined_highlights)
 
     local bufnr = vim.api.nvim_create_buf(false, true)
 
