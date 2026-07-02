@@ -18,6 +18,19 @@ local function is_absolute(value)
     return value:sub(1, 1) == "/" or value:sub(1, 1) == "~"
 end
 
+---@param file string
+---@param dir string
+---@return boolean
+local function is_inside_dir(file, dir)
+    return file == dir or file:sub(1, #dir + 1) == dir .. "/"
+end
+
+---@param file string
+---@return boolean
+local function is_markdown(file)
+    return file:match("%.md$") ~= nil
+end
+
 ---@param value string
 ---@return string
 function M.normalize(value)
@@ -134,9 +147,7 @@ function M.is_inside_root_path(file)
         return false
     end
 
-    local current = M.normalize(file)
-
-    return current == root_dir or current:sub(1, #root_dir + 1) == root_dir .. "/"
+    return is_inside_dir(M.normalize(file), root_dir)
 end
 
 ---@param bufnr integer
@@ -149,6 +160,41 @@ function M.is_inside_root(bufnr)
     end
 
     return M.is_inside_root_path(file)
+end
+
+---@param file string
+---@return boolean
+function M.is_task_file_path(file)
+    local current = M.normalize(file)
+    local task_file = M.task_file()
+
+    if task_file and current == task_file then
+        return true
+    end
+
+    if not is_markdown(current) then
+        return false
+    end
+
+    for _, scan_dir in ipairs(M.scan_dirs()) do
+        if is_inside_dir(current, scan_dir) then
+            return true
+        end
+    end
+
+    return false
+end
+
+---@param bufnr integer
+---@return boolean
+function M.is_task_file(bufnr)
+    local file = M.buffer_path(bufnr)
+
+    if not file then
+        return false
+    end
+
+    return M.is_task_file_path(file)
 end
 
 ---@param bufnr integer

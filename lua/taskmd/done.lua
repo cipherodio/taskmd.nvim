@@ -11,8 +11,11 @@ local function get_uuid(line)
 end
 
 function M.done()
-    if not path.is_inside_root(0) then
-        vim.notify("TaskMD: done only works inside root_dir.", vim.log.levels.ERROR)
+    if not path.is_task_file(0) then
+        vim.notify(
+            "TaskMD: done only works inside a TaskMD task file.",
+            vim.log.levels.ERROR
+        )
         return
     end
 
