@@ -37,8 +37,8 @@ vim.pack.add({
 ```lua
 require("taskmd").setup({
     file_path = {
-        "~/example/agenda.md",
-        "~/example/task.md",
+        "~/hub/src/mdnotes/agenda.md",
+        "~/hub/src/mdnotes/task.md",
     },
 
     sync_on_open = {
@@ -50,14 +50,27 @@ require("taskmd").setup({
     short_uuid = true,
 
     highlight = {
-        enable = true,
-        overrides = {
-            scheduled = "",
-            due = "",
-            date = "",
-            duration = "",
-            rec = "",
-            uuid = "",
+        file_output = {
+            enable = true,
+            overrides = {
+                scheduled = "",
+                due = "",
+                duration = "",
+                rec = "",
+                rec_value = "",
+                id = "",
+            },
+        },
+        calendar = {
+            overrides = {
+                month = "",
+                weekday = "",
+                day = "",
+                today = "",
+                due = "",
+                scheduled = "",
+                sched_due = "",
+            },
         },
     },
 
@@ -67,6 +80,7 @@ require("taskmd").setup({
         delete = "<leader>tx",
         done = "<leader>td",
         fetch = "<leader>tf",
+        calendar = "<leader>tc",
     },
 })
 ```
@@ -79,6 +93,7 @@ require("taskmd").setup({
 :TaskMD delete
 :TaskMD done
 :TaskMD fetch
+:TaskMD calendar
 ```
 
 ## Example

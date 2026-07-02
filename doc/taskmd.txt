@@ -8,17 +8,18 @@ CONTENTS			    *taskmd-contents*
 
 1. Introduction			 |taskmd-introduction|
 2. Installation			 |taskmd-installation|
-3. Setup		     |taskmd-setup|
-4. Commands		     |taskmd-commands|
-5. Keymaps		     |taskmd-keymaps|
+3. Setup			 |taskmd-setup|
+4. Commands			 |taskmd-commands|
+5. Keymaps			 |taskmd-keymaps|
 6. Configuration		 |taskmd-configuration|
 7. Task format			 |taskmd-task-format|
-8. Recurring tasks		 |taskmd-recurring|
-9. Sync on open			 |taskmd-sync-on-open|
-10. Healthcheck			 |taskmd-healthcheck|
+8. Calendar			 |taskmd-calendar|
+9. Recurring tasks		 |taskmd-recurring|
+10. Sync on open		 |taskmd-sync-on-open|
+11. Healthcheck			 |taskmd-healthcheck|
 
 ==============================================================================
-INTRODUCTION			  *taskmd* *taskmd-introduction*
+INTRODUCTION			    *taskmd* *taskmd-introduction*
 
 taskmd.nvim is a small Neovim plugin for managing Taskwarrior tasks inside
 Markdown files.
@@ -28,14 +29,16 @@ It supports:
 - adding Taskwarrior tasks from Neovim
 - fetching pending Taskwarrior tasks into Markdown
 - syncing Markdown task lines from Taskwarrior
+- marking Taskwarrior tasks as done from Markdown
 - deleting Taskwarrior tasks from Markdown
+- opening a floating calendar view
 - syncing configured files once when opened
 
-Each Markdown task line stores a Taskwarrior UUID.
+Each Markdown task line stores a Taskwarrior task id.
 
 Example:
 >
-    - Pay bills due:july-07-2026 @12:00am in:6d recur:monthly uuid:8a6d2134
+    - Pay bills due:4d 12h rec:m id:8a6d2134
 <
 ==============================================================================
 INSTALLATION			    *taskmd-installation*
@@ -47,52 +50,90 @@ Example using vim.pack:
     }, { confirm = false })
 <
 ==============================================================================
-SETUP				     *taskmd-setup*
+SETUP				    *taskmd-setup*
 
 Example configuration:
 >lua
     require("taskmd").setup({
-	sync_on_open = true,
 	file_path = {
 	    "~/hub/src/mdnotes/agenda.md",
 	    "~/hub/src/mdnotes/todo.md",
 	},
+	sync_on_open = {
+	    enable = true,
+	    autowrite = true,
+	},
+	write_on_command = true,
 	short_uuid = true,
+	highlight = {
+	    file_output = {
+		enable = true,
+		overrides = {
+		    scheduled = "",
+		    due = "",
+		    duration = "",
+		    rec = "",
+		    rec_value = "",
+		    id = "",
+		},
+	    },
+	    calendar = {
+		overrides = {
+		    month = "",
+		    weekday = "",
+		    day = "",
+		    today = "",
+		    due = "",
+		    scheduled = "",
+		    sched_due = "",
+		},
+	    },
+	},
 	keymaps = {
 	    add = "<leader>ta",
 	    sync = "<leader>ts",
-	    delete = "<leader>td",
+	    delete = "<leader>tx",
+	    done = "<leader>td",
 	    fetch = "<leader>tf",
+	    calendar = "<leader>tc",
 	},
     })
 <
 ==============================================================================
-COMMANDS			  *taskmd-commands*
+COMMANDS			    *taskmd-commands*
 
-The main command is:			*:TaskMD*
+The main command is:			    *:TaskMD*
 >vim
     :TaskMD {command}
 <
 Available commands:
 
-Create a Taskwarrior task.		*:TaskMD-add*
+Create a Taskwarrior task.		    *:TaskMD-add*
 >vim
     :TaskMD add
 <
-Sync Markdown task lines from Taskwarrior.	 *:TaskMD-sync*
+Sync Markdown task lines from Taskwarrior.  *:TaskMD-sync*
 >vim
     :TaskMD sync
 <
-Delete the task under the cursor.	     *:TaskMD-delete*
+Delete the task under the cursor.	    *:TaskMD-delete*
 >vim
     :TaskMD delete
 <
-Fetch pending Taskwarrior tasks.	     *:TaskMD-fetch*
+Mark the task under the cursor as done.	    *:TaskMD-done*
+>vim
+    :TaskMD done
+<
+Fetch pending Taskwarrior tasks.	    *:TaskMD-fetch*
 >vim
     :TaskMD fetch
 <
+Open calendar.				    *:TaskMD-calendar*
+>vim
+    :TaskMD calendar
+<
 ------------------------------------------------------------------------------
-Add				  *taskmd-add*
+Add				    *taskmd-add*
 
 The add command prompts for task information.
 
@@ -126,10 +167,10 @@ The Markdown output uses Taskwarrior's resolved date.
 
 Example output:
 >markdown
-    - Prime Video Subscription due:july-07-2026 @12:00am in:6d recur:monthly uuid:8a6d2134
+    - Prime Video Subscription due:4d 12h rec:m id:8a6d2134
 <
 ------------------------------------------------------------------------------
-Sync				  *taskmd-sync*
+Sync				    *taskmd-sync*
 
 The sync command updates existing Markdown task lines from Taskwarrior.
 
@@ -137,20 +178,18 @@ Command:
 >vim
     :TaskMD sync
 <
-TaskMD reads the `uuid:` from each Markdown line, gets the matching
+TaskMD reads the `id:` from each Markdown line, gets the matching
 Taskwarrior task, and rewrites the Markdown line.
 
 It can update:
 >sh
     scheduled:
     due:
-    @time
-    in:
-    recur:
-    uuid:
+    rec:
+    id:
 <
 ------------------------------------------------------------------------------
-Delete				  *taskmd-delete*
+Delete				    *taskmd-delete*
 
 The delete command deletes the Taskwarrior task under the cursor and removes
 the Markdown line.
@@ -159,14 +198,30 @@ Command:
 >vim
     :TaskMD delete
 <
-The current line must contain a `uuid:` value.
+The current line must contain a `id:` value.
 
 Example:
 >
-    - Pay bills due:july-07-2026 @12:00am in:6d uuid:8a6d2134
+    - Pay bills due:4d 12h rec:m id:8a6d2134
 <
 ------------------------------------------------------------------------------
-Fetch				  *taskmd-fetch*
+Done				    *taskmd-done*
+
+The done command marks the Taskwarrior task under the cursor as done and
+removes the Markdown line.
+
+Command:
+>vim
+    :TaskMD done
+<
+The current line must contain an `id:` value.
+
+Example:
+>
+    - Pay bills due:4d 12h rec:m id:8a6d2134
+<
+------------------------------------------------------------------------------
+Fetch				    *taskmd-fetch*
 
 The fetch command inserts pending Taskwarrior tasks that are not yet in the
 current Markdown buffer.
@@ -175,11 +230,27 @@ Command:
 >vim
     :TaskMD fetch
 <
-TaskMD checks existing `uuid:` values and skips tasks that are already in the
+TaskMD checks existing `id:` values and skips tasks that are already in the
 file.
 
+------------------------------------------------------------------------------
+Calendar			    *taskmd-calendar-command*
+
+The calendar command opens a floating calendar window.
+
+Command:
+>vim
+    :TaskMD calendar
+<
+The calendar displays the current month and the next two months. Dates are
+highlighted when pending Taskwarrior tasks have due or scheduled dates.
+
+Inside the calendar window:
+>vim
+    q	close calendar <Esc>   close calendar
+<
 ==============================================================================
-KEYMAPS				   *taskmd-keymaps*
+KEYMAPS				    *taskmd-keymaps*
 
 Keymaps are optional.
 
@@ -188,8 +259,10 @@ Example:
     keymaps = {
 	add = "<leader>ta",
 	sync = "<leader>ts",
-	delete = "<leader>td",
+	delete = "<leader>tx",
+	done = "<leader>td",
 	fetch = "<leader>tf",
+	calendar = "<leader>tc",
     }
 <
 Each keymap runs the matching taskmd command.
@@ -203,21 +276,24 @@ runs:
     :TaskMD add
 <
 ==============================================================================
-CONFIGURATION			   *taskmd-configuration*
+CONFIGURATION			    *taskmd-configuration*
 
-`sync_on_open` enables silent sync when opening configured files.
-							*taskmd-sync_on_open*
+`sync_on_open` enables silent sync, and `autowrite` enables autowrite
+to file after sync when opening configured files.
+						*taskmd-sync_on_open*
 
 Example:
 >lua
-    sync_on_open = true
+    sync_on_open = {
+	enable = true,
+	autowrite = true,
+    }
 <
-
-If enabled, TaskMD syncs the file once after opening it.
+If enabled, TaskMD syncs the file once, then autowrite after opening it.
 
 ------------------------------------------------------------------------------
 `file_path` is the file or list of files used by sync_on_open.
-							*taskmd-file_path*
+						*taskmd-file_path*
 Example:
 >lua
     file_path = {
@@ -228,7 +304,17 @@ Example:
 If `file_path` is missing, sync_on_open does nothing.
 
 ------------------------------------------------------------------------------
-`short_uuid` controls UUID display.		 *taskmd-short_uuid*
+`write_on_command` writes the current buffer after TaskMD commands.
+						*taskmd-write-on-command*
+Example:
+>lua
+    write_on_command = true
+<
+When enabled, commands like add, sync, delete, done, and fetch write
+the buffer after changing it.
+
+------------------------------------------------------------------------------
+`short_uuid` controls UUID display.		*taskmd-short_uuid*
 
 Example:
 >lua
@@ -238,20 +324,79 @@ When enabled, TaskMD displays only the first 8 characters of the UUID.
 
 Example:
 >
-    uuid:8a6d2134
+    id:8a6d2134
 <
 When disabled, TaskMD displays the full UUID.
 
 ------------------------------------------------------------------------------
-`keymaps` configures optional keymaps.		  *taskmd-keymaps-option*
+`highlight.file_output` configures Markdown task line highlights.
+						*taskmd-highlight-file-output*
+Example:
+>lua
+    highlight = {
+	file_output = {
+	    enable = true,
+	    overrides = {
+		scheduled = "",
+		due = "",
+		duration = "",
+		rec = "",
+		rec_value = "",
+		id = "",
+	    },
+	},
+    }
+<
+Supported file output highlight keys:
+>vim
+    scheduled
+    due
+    duration
+    rec
+    rec_value
+    id
+<
+------------------------------------------------------------------------------
+`highlight.calendar` configures floating calendar highlights.
+						*taskmd-highlight-calendar*
+Example:
+>lua
+    highlight = {
+	calendar = {
+	    overrides = {
+		month = "",
+		weekday = "",
+		day = "",
+		today = "",
+		due = "",
+		scheduled = "",
+		sched_due = "",
+	    },
+	},
+    }
+<
+Supported calendar highlight keys:
+>vim
+    month
+    weekday
+    day
+    today
+    due
+    scheduled
+    sched_due
+<
+------------------------------------------------------------------------------
+`keymaps` configures optional keymaps.		*taskmd-keymaps-option*
 
 Example:
 >lua
     keymaps = {
-    add = "<leader>ta",
-    sync = "<leader>ts",
-    delete = "<leader>td",
-    fetch = "<leader>tf",
+	add = "<leader>ta",
+	sync = "<leader>ts",
+	delete = "<leader>td",
+	done = "<leader>td",
+	fetch = "<leader>tf",
+	calendar = "<leader>tc",
     }
 <
 Supported keys:
@@ -259,24 +404,26 @@ Supported keys:
     add
     sync
     delete
+    done
     fetch
+    calendar
 <
 ==============================================================================
-TASK FORMAT			    *taskmd-task-format*
+TASK FORMAT					*taskmd-task-format*
 
 TaskMD task lines are plain Markdown lines with Taskwarrior fields.
 
 Due task:
 >
-    - Pay bills due:july-07-2026 @12:00am in:6d uuid:8a6d2134
+    - Pay bills due:4d 12h rec:m id:8a6d2134
 <
 Scheduled task:
 >
-    - Inspect plugins scheduled:june-30-2026 @02:30pm in:9h uuid:af2aa2d5
+    - Call my sister scheduled:1mo 3d 16m id:ca04efad
 <
 Recurring task:
 >
-    - Prime Video Subscription due:july-07-2026 @12:00am in:6d recur:monthly uuid:8a6d2134
+    - Prime Video subscription due:4d 7h 16m rec:m id:8474692d
 <
 Fields:
 
@@ -284,25 +431,64 @@ description~
     The task description.
 
 scheduled~
-    Scheduled date from Taskwarrior.
+    Time left before the scheduled date.
 
 due~
-    Due date from Taskwarrior.
+    Time left before the due date.
 
-@time~
-    Display time.
+rec~
+    Short recurrence value from Taskwarrior.
 
-in~
-    Time left before the scheduled or due date.
+    Supported short values:
+>vim
+    d	daily
+    w	weekly
+    m	monthly
+    y	yearly
+<
 
-recur~
-    Recurrence rule from Taskwarrior.
-
-uuid~
-    Taskwarrior UUID.
+id~
+    Taskwarrior task UUID. When |taskmd-short-uuid| is enabled, this is
+    displayed as a short UUID.
 
 ==============================================================================
-RECURRING TASKS			      *taskmd-recurring*
+CALENDAR					*taskmd-calendar*
+
+TaskMD can open a floating calendar window.
+
+Command:
+>vim
+    :TaskMD calendar
+<
+The calendar shows the current month and the next two months.
+
+Calendar colors:
+
+month~
+Month title.
+
+weekday~
+Weekday row.
+
+day~
+Normal calendar day.
+
+today~
+Current day.
+
+due~
+Day with a pending due task.
+
+scheduled~
+Day with a pending scheduled task.
+
+sched_due~
+Day with both pending due and scheduled tasks.
+
+If a day is both today and has a task, the task highlight takes priority.
+
+==============================================================================
+RECURRING TASKS					*taskmd-recurring*
 
 Taskwarrior recurring tasks create two records:
 >sh
@@ -318,7 +504,7 @@ TaskMD stores the UUID of the pending child task.
 
 Example:
 >
-    uuid:8a6d2134
+    id:8a6d2134
 <
 This is intentional.
 
@@ -341,14 +527,17 @@ Use:
 to see everything, including recurring parents/templates.
 
 ==============================================================================
-SYNC ON OPEN			     *taskmd-sync-on-open*
+SYNC ON OPEN					*taskmd-sync-on-open*
 
 TaskMD can sync configured files once when they are opened.
 
 Example:
 >lua
     require("taskmd").setup({
-	sync_on_open = true,
+	sync_on_open = {
+	    enable = true,
+	    autowrite = true,
+	},
 	file_path = {
 	    "~/hub/src/mdnotes/agenda.md",
 	    "~/hub/src/mdnotes/todo.md",
@@ -364,7 +553,7 @@ To refresh manually, run:
     :TaskMD sync
 <
 ==============================================================================
-HEALTHCHECK			    *taskmd-healthcheck*
+HEALTHCHECK					*taskmd-healthcheck*
 
 Run:
 >vim
