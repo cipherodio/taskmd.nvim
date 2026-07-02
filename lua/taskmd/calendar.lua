@@ -236,31 +236,31 @@ local function task_date(value)
     return nil
 end
 
----@param hour string|integer
----@param minute string|integer
----@return string?, integer?
-local function display_time(hour, minute)
+---@param time string
+---@return integer?
+local function time_to_minutes(time)
+    local hour, minute, meridiem = time:lower():match("^(%d%d?):(%d%d)([ap]m)$")
+
+    if not (hour and minute and meridiem) then
+        return nil
+    end
+
     local hour_number = tonumber(hour)
     local minute_number = tonumber(minute)
 
     if not (hour_number and minute_number) then
-        return nil, nil
+        return nil
     end
 
-    local suffix = "am"
-
-    if hour_number >= 12 then
-        suffix = "pm"
+    if meridiem == "pm" and hour_number ~= 12 then
+        hour_number = hour_number + 12
     end
 
-    local display_hour = hour_number % 12
-
-    if display_hour == 0 then
-        display_hour = 12
+    if meridiem == "am" and hour_number == 12 then
+        hour_number = 0
     end
 
-    return ("@%02d:%02d%s"):format(display_hour, minute_number, suffix),
-        (hour_number * 60) + minute_number
+    return (hour_number * 60) + minute_number
 end
 
 ---@param value any
@@ -270,28 +270,10 @@ local function task_time(value)
         return nil, 9999
     end
 
-    local hour, minute = value:match("T(%d%d)(%d%d)%d%d")
+    local _, local_time = date.from_taskwarrior_datetime(value)
 
-    if hour then
-        local displayed, minutes = display_time(hour, minute)
-
-        return displayed, minutes or 9999
-    end
-
-    hour, minute = value:match("T(%d%d):(%d%d)")
-
-    if hour then
-        local displayed, minutes = display_time(hour, minute)
-
-        return displayed, minutes or 9999
-    end
-
-    hour, minute = value:match("%s+(%d%d?):(%d%d)")
-
-    if hour then
-        local displayed, minutes = display_time(hour, minute)
-
-        return displayed, minutes or 9999
+    if local_time then
+        return "@" .. local_time, time_to_minutes(local_time) or 9999
     end
 
     return nil, 9999
