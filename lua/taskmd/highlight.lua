@@ -1,4 +1,5 @@
 local config = require("taskmd.config")
+local path = require("taskmd.utils.path")
 
 local M = {}
 
@@ -45,44 +46,6 @@ local function color(name)
     end
 
     return "NONE"
-end
-
----@param value string
----@return string
-local function normalize(value)
-    return vim.fn.fnamemodify(vim.fn.expand(value), ":p")
-end
-
----@param bufnr integer
----@return boolean
-local function matches_file(bufnr)
-    local file_path = config.options.file_path
-
-    if not file_path then
-        return false
-    end
-
-    local name = vim.api.nvim_buf_get_name(bufnr)
-
-    if name == "" then
-        return false
-    end
-
-    local current = normalize(name)
-
-    if type(file_path) == "string" then
-        return current == normalize(file_path)
-    end
-
-    if type(file_path) == "table" then
-        for _, path in ipairs(file_path) do
-            if current == normalize(path) then
-                return true
-            end
-        end
-    end
-
-    return false
 end
 
 local function set_highlights()
@@ -220,7 +183,7 @@ function M.refresh(bufnr)
         return
     end
 
-    if not matches_file(bufnr) then
+    if not path.is_inside_root(bufnr) then
         return
     end
 

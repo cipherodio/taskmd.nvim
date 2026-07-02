@@ -31,8 +31,9 @@
 ---@field calendar? TaskMDCalendarHighlightOptions
 
 ---@class TaskMDOptions
+---@field root_dir? string
+---@field task_file? string
 ---@field sync_on_open? TaskMDSyncOnOpenOptions
----@field file_path? string|string[]
 ---@field short_uuid? boolean
 ---@field write_on_command? boolean
 ---@field highlight? TaskMDHighlightOptions
@@ -42,12 +43,14 @@ local M = {}
 
 ---@type TaskMDOptions
 M.options = {
+    root_dir = nil,
+    task_file = nil,
+
     sync_on_open = {
         enable = false,
         autowrite = false,
     },
 
-    file_path = nil,
     short_uuid = false,
     write_on_command = false,
 

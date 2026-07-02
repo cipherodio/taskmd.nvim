@@ -1,4 +1,5 @@
 local config = require("taskmd.config")
+local path = require("taskmd.utils.path")
 local shared = require("taskmd.shared")
 local sync = require("taskmd.sync")
 
@@ -11,48 +12,16 @@ local group = vim.api.nvim_create_augroup("taskmd_sync_on_open", {
     clear = true,
 })
 
----@param value string
----@return string
-local function normalize(value)
-    return vim.fn.fnamemodify(vim.fn.expand(value), ":p")
-end
-
 ---@param bufnr integer
 ---@return boolean
-local function matches_file(bufnr)
+local function should_sync(bufnr)
     local sync_on_open = config.options.sync_on_open
 
     if not sync_on_open or not sync_on_open.enable then
         return false
     end
 
-    local file_path = config.options.file_path
-
-    if not file_path then
-        return false
-    end
-
-    local name = vim.api.nvim_buf_get_name(bufnr)
-
-    if name == "" then
-        return false
-    end
-
-    local current = normalize(name)
-
-    if type(file_path) == "string" then
-        return current == normalize(file_path)
-    end
-
-    if type(file_path) == "table" then
-        for _, path in ipairs(file_path) do
-            if current == normalize(path) then
-                return true
-            end
-        end
-    end
-
-    return false
+    return path.is_inside_root(bufnr)
 end
 
 ---@param bufnr integer
@@ -61,7 +30,7 @@ local function sync_buffer(bufnr)
         return
     end
 
-    if not matches_file(bufnr) then
+    if not should_sync(bufnr) then
         return
     end
 
@@ -72,7 +41,7 @@ local function sync_buffer(bufnr)
             return
         end
 
-        if not matches_file(bufnr) then
+        if not should_sync(bufnr) then
             return
         end
 

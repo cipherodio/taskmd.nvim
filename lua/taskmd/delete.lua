@@ -1,3 +1,4 @@
+local path = require("taskmd.utils.path")
 local shared = require("taskmd.shared")
 local taskwarrior = require("taskmd.taskwarrior")
 
@@ -10,6 +11,11 @@ local function get_uuid(line)
 end
 
 function M.delete()
+    if not path.is_inside_root(0) then
+        vim.notify("TaskMD: delete only works inside root_dir.", vim.log.levels.ERROR)
+        return
+    end
+
     local row = vim.api.nvim_win_get_cursor(0)[1]
     local line = vim.api.nvim_get_current_line()
     local uuid = get_uuid(line)
