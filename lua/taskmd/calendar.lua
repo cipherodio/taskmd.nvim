@@ -60,6 +60,19 @@ local function color(name)
     return "NONE"
 end
 
+---@return string
+local function border()
+    local highlight = config.options.highlight or {}
+    local calendar = highlight.calendar or {}
+    local value = calendar.border
+
+    if type(value) == "string" and value ~= "" then
+        return value
+    end
+
+    return "rounded"
+end
+
 ---@class TaskMDCalendarMark
 ---@field due? boolean
 ---@field scheduled? boolean
@@ -855,7 +868,7 @@ function M.open()
         row = math.max(row, 0),
         col = math.max(col, 0),
         style = "minimal",
-        border = "rounded",
+        border = border(),
     })
 
     vim.wo[winid].wrap = false

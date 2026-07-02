@@ -28,6 +28,7 @@
 ---@field week_time? string
 
 ---@class TaskMDCalendarHighlightOptions
+---@field border? string
 ---@field overrides? TaskMDCalendarHighlightOverrides
 
 ---@class TaskMDHighlightOptions
