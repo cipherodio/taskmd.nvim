@@ -408,7 +408,7 @@ local function join_months(months)
     for row = 1, 8 do
         table.insert(
             lines,
-            ("| %s | %s | %s |"):format(months[1][row], months[2][row], months[3][row])
+            ("%s | %s | %s"):format(months[1][row], months[2][row], months[3][row])
         )
     end
 
@@ -420,9 +420,9 @@ end
 local function join_highlights(highlights)
     local joined = {}
     local offsets = {
-        2,
-        width + 5,
-        (width * 2) + 8,
+        0,
+        width + 3,
+        (width * 2) + 6,
     }
 
     for month_index, month_highlights in ipairs(highlights) do
