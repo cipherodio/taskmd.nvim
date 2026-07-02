@@ -4,6 +4,10 @@ author: Jeremy
 description: Markdown + Taskwarrior integration for Neovim.
 ---
 
+![screenshot01.jpeg](/assets/screenshot01.jpeg)
+
+![screenshot02.jpeg](/assets/screenshot02.jpeg)
+
 ## Features
 
 - Add Taskwarrior tasks from Neovim
