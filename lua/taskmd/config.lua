@@ -22,6 +22,10 @@
 ---@field due? string
 ---@field scheduled? string
 ---@field sched_due? string
+---@field this_week? string
+---@field week_date? string
+---@field week_task? string
+---@field week_time? string
 
 ---@class TaskMDCalendarHighlightOptions
 ---@field overrides? TaskMDCalendarHighlightOverrides

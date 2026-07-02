@@ -22,6 +22,7 @@ local month_names = {
 }
 
 local width = 20
+local day_seconds = 24 * 60 * 60
 
 ---@type table<string, string>
 local default_colors = {
@@ -32,6 +33,10 @@ local default_colors = {
     due = "#fb4934",
     scheduled = "#b8bb26",
     sched_due = "#8ec07c",
+    this_week = "#458588",
+    week_date = "#fabd2f",
+    week_task = "#ebdbb2",
+    week_time = "#8ec07c",
 }
 
 ---@param name string
@@ -65,6 +70,14 @@ end
 ---@field end_col integer
 ---@field group string
 
+---@class TaskMDCalendarWeekTask
+---@field key string
+---@field kind string
+---@field group string
+---@field description string
+---@field time? string
+---@field minutes integer
+
 local function set_highlights()
     vim.api.nvim_set_hl(0, "TaskMDCalendarMonth", {
         fg = color("month"),
@@ -92,6 +105,22 @@ local function set_highlights()
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarBoth", {
         fg = color("sched_due"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarThisWeek", {
+        fg = color("this_week"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarWeekDate", {
+        fg = color("week_date"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarWeekTask", {
+        fg = color("week_task"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarWeekTime", {
+        fg = color("week_time"),
     })
 end
 
@@ -207,14 +236,71 @@ local function task_date(value)
     return nil
 end
 
----@return table<string, TaskMDCalendarMark>
-local function task_marks()
-    local marks = {}
-    local tasks = taskwarrior.pending()
+---@param hour string|integer
+---@param minute string|integer
+---@return string?, integer?
+local function display_time(hour, minute)
+    local hour_number = tonumber(hour)
+    local minute_number = tonumber(minute)
 
-    if not tasks then
-        return marks
+    if not (hour_number and minute_number) then
+        return nil, nil
     end
+
+    local suffix = "am"
+
+    if hour_number >= 12 then
+        suffix = "pm"
+    end
+
+    local display_hour = hour_number % 12
+
+    if display_hour == 0 then
+        display_hour = 12
+    end
+
+    return ("@%02d:%02d%s"):format(display_hour, minute_number, suffix),
+        (hour_number * 60) + minute_number
+end
+
+---@param value any
+---@return string?, integer
+local function task_time(value)
+    if type(value) ~= "string" then
+        return nil, 9999
+    end
+
+    local hour, minute = value:match("T(%d%d)(%d%d)%d%d")
+
+    if hour then
+        local displayed, minutes = display_time(hour, minute)
+
+        return displayed, minutes or 9999
+    end
+
+    hour, minute = value:match("T(%d%d):(%d%d)")
+
+    if hour then
+        local displayed, minutes = display_time(hour, minute)
+
+        return displayed, minutes or 9999
+    end
+
+    hour, minute = value:match("%s+(%d%d?):(%d%d)")
+
+    if hour then
+        local displayed, minutes = display_time(hour, minute)
+
+        return displayed, minutes or 9999
+    end
+
+    return nil, 9999
+end
+
+---@param tasks table[]
+---@return table<string, TaskMDCalendarMark>
+local function task_marks(tasks)
+    local marks = {}
 
     for _, task in ipairs(tasks) do
         if type(task) == "table" then
@@ -373,6 +459,343 @@ local function join_highlights(highlights)
     return joined
 end
 
+---@param time integer
+---@return string?
+local function date_key_from_time(time)
+    local result = os.date("*t", time)
+
+    if type(result) ~= "table" then
+        return nil
+    end
+
+    local year = tonumber(result.year)
+    local month = tonumber(result.month)
+    local day = tonumber(result.day)
+
+    if not (year and month and day) then
+        return nil
+    end
+
+    return ("%04d-%02d-%02d"):format(year, month, day)
+end
+
+---@return string[], table<string, boolean>
+local function current_week()
+    local now = os.date("*t")
+
+    if type(now) ~= "table" then
+        return {}, {}
+    end
+
+    local year = tonumber(now.year)
+    local month = tonumber(now.month)
+    local day = tonumber(now.day)
+
+    if not (year and month and day) then
+        return {}, {}
+    end
+
+    local today_time = os.time({
+        year = year,
+        month = month,
+        day = day,
+        hour = 12,
+    })
+
+    local today = os.date("*t", today_time)
+
+    if type(today) ~= "table" then
+        return {}, {}
+    end
+
+    local wday = tonumber(today.wday) or 2
+    local offset = (wday + 5) % 7
+    local monday = today_time - (offset * day_seconds)
+    local keys = {}
+    local lookup = {}
+
+    for i = 0, 6 do
+        local key = date_key_from_time(monday + (i * day_seconds))
+
+        if key then
+            table.insert(keys, key)
+            lookup[key] = true
+        end
+    end
+
+    return keys, lookup
+end
+
+---@param key string
+---@return string
+local function display_week_date(key)
+    local year, month, day = key:match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+
+    if not (year and month and day) then
+        return key
+    end
+
+    local year_number = tonumber(year)
+    local month_number = tonumber(month)
+    local day_number = tonumber(day)
+
+    if not (year_number and month_number and day_number) then
+        return key
+    end
+
+    local time = os.time({
+        year = year_number,
+        month = month_number,
+        day = day_number,
+        hour = 12,
+    })
+
+    local result = os.date("*t", time)
+
+    if type(result) ~= "table" then
+        return key
+    end
+
+    local month_name = month_names[month_number] or month
+    local weekday = tostring(os.date("%A", time))
+
+    return ("%s-%s-%s %s"):format(day, month_name, year, weekday)
+end
+
+---@param task table
+---@return string
+local function task_description(task)
+    if type(task.description) == "string" and task.description ~= "" then
+        return task.description
+    end
+
+    if type(task.task) == "string" and task.task ~= "" then
+        return task.task
+    end
+
+    return "Untitled task"
+end
+
+---@param tasks table[]
+---@param week_lookup table<string, boolean>
+---@return table<string, TaskMDCalendarWeekTask[]>
+local function week_tasks(tasks, week_lookup)
+    local grouped = {}
+
+    for _, task in ipairs(tasks) do
+        if type(task) == "table" then
+            local due = task_date(task.due)
+
+            if due and week_lookup[due] then
+                local time, minutes = task_time(task.due)
+
+                grouped[due] = grouped[due] or {}
+
+                table.insert(grouped[due], {
+                    key = due,
+                    kind = "Due",
+                    group = "TaskMDCalendarDue",
+                    description = task_description(task),
+                    time = time,
+                    minutes = minutes,
+                })
+            end
+
+            local scheduled = task_date(task.scheduled)
+
+            if scheduled and week_lookup[scheduled] then
+                local time, minutes = task_time(task.scheduled)
+
+                grouped[scheduled] = grouped[scheduled] or {}
+
+                table.insert(grouped[scheduled], {
+                    key = scheduled,
+                    kind = "Scheduled",
+                    group = "TaskMDCalendarScheduled",
+                    description = task_description(task),
+                    time = time,
+                    minutes = minutes,
+                })
+            end
+        end
+    end
+
+    for _, items in pairs(grouped) do
+        table.sort(items, function(left, right)
+            if left.minutes == right.minutes then
+                return left.description < right.description
+            end
+
+            return left.minutes < right.minutes
+        end)
+    end
+
+    return grouped
+end
+
+---@param highlights TaskMDCalendarHighlight[]
+---@param row integer
+---@param start_col integer
+---@param end_col integer
+---@param group string
+local function add_highlight(highlights, row, start_col, end_col, group)
+    if end_col <= start_col then
+        return
+    end
+
+    table.insert(highlights, {
+        row = row,
+        start_col = start_col,
+        end_col = end_col,
+        group = group,
+    })
+end
+
+---@param lines string[]
+---@param highlights TaskMDCalendarHighlight[]
+---@param text string
+---@param group string?
+local function append_line(lines, highlights, text, group)
+    table.insert(lines, text)
+
+    if group then
+        add_highlight(highlights, #lines - 1, 0, #text, group)
+    end
+end
+
+---@param lines string[]
+---@param highlights TaskMDCalendarHighlight[]
+---@param key string
+local function append_week_date(lines, highlights, key)
+    local text = "- " .. display_week_date(key)
+
+    table.insert(lines, text)
+    add_highlight(highlights, #lines - 1, 2, #text, "TaskMDCalendarWeekDate")
+end
+
+---@param lines string[]
+---@param highlights TaskMDCalendarHighlight[]
+---@param item TaskMDCalendarWeekTask
+local function append_week_task(lines, highlights, item)
+    local time = ""
+
+    if item.time then
+        time = " " .. item.time
+    end
+
+    local text = ("    - %s: %s%s"):format(item.kind, item.description, time)
+
+    table.insert(lines, text)
+
+    local row = #lines - 1
+    local kind_start = 6
+    local kind_end = kind_start + #item.kind
+    local task_start = kind_end + 2
+    local task_end = #text
+
+    add_highlight(highlights, row, kind_start, kind_end + 1, item.group)
+
+    if item.time then
+        local time_start = text:find(item.time, 1, true)
+
+        if time_start then
+            task_end = time_start - 2
+
+            add_highlight(
+                highlights,
+                row,
+                time_start - 1,
+                time_start + #item.time - 1,
+                "TaskMDCalendarWeekTime"
+            )
+        end
+    end
+
+    add_highlight(highlights, row, task_start, task_end, "TaskMDCalendarWeekTask")
+end
+
+---@param tasks table[]
+---@return string[], TaskMDCalendarHighlight[]
+local function render_week(tasks)
+    local lines = {}
+    local highlights = {}
+    local week_keys, week_lookup = current_week()
+    local grouped = week_tasks(tasks, week_lookup)
+    local has_task = false
+
+    append_line(lines, highlights, "", nil)
+    append_line(lines, highlights, "This week:", "TaskMDCalendarThisWeek")
+
+    for _, key in ipairs(week_keys) do
+        local items = grouped[key]
+
+        if items and #items > 0 then
+            has_task = true
+
+            append_week_date(lines, highlights, key)
+
+            for _, item in ipairs(items) do
+                append_week_task(lines, highlights, item)
+            end
+        end
+    end
+
+    if not has_task then
+        append_line(
+            lines,
+            highlights,
+            "- No pending due or scheduled tasks.",
+            "TaskMDCalendarWeekTask"
+        )
+    end
+
+    return lines, highlights
+end
+
+---@param lines string[]
+---@param highlights TaskMDCalendarHighlight[]
+---@param extra_lines string[]
+---@param extra_highlights TaskMDCalendarHighlight[]
+local function append_lines(lines, highlights, extra_lines, extra_highlights)
+    local row_offset = #lines
+
+    for _, line in ipairs(extra_lines) do
+        table.insert(lines, line)
+    end
+
+    for _, highlight in ipairs(extra_highlights) do
+        table.insert(highlights, {
+            row = highlight.row + row_offset,
+            start_col = highlight.start_col,
+            end_col = highlight.end_col,
+            group = highlight.group,
+        })
+    end
+end
+
+---@param lines string[]
+---@return integer
+local function max_width(lines)
+    local longest = 1
+
+    for _, line in ipairs(lines) do
+        longest = math.max(longest, #line)
+    end
+
+    return longest
+end
+
+---@return table[]
+local function pending_tasks()
+    local tasks = taskwarrior.pending()
+
+    if type(tasks) ~= "table" then
+        return {}
+    end
+
+    return tasks
+end
+
 ---@param bufnr integer
 ---@param highlights TaskMDCalendarHighlight[]
 local function apply_highlights(bufnr, highlights)
@@ -405,7 +828,8 @@ end
 function M.open()
     set_highlights()
 
-    local marks = task_marks()
+    local tasks = pending_tasks()
+    local marks = task_marks(tasks)
     local today = today_key()
 
     local months = {}
@@ -421,6 +845,9 @@ function M.open()
 
     local lines = join_months(months)
     local joined_highlights = join_highlights(highlights)
+    local week_lines, week_highlights = render_week(tasks)
+
+    append_lines(lines, joined_highlights, week_lines, week_highlights)
 
     local bufnr = vim.api.nvim_create_buf(false, true)
 
@@ -433,7 +860,7 @@ function M.open()
     vim.bo[bufnr].modifiable = false
 
     local ui = vim.api.nvim_list_uis()[1]
-    local win_width = #lines[1]
+    local win_width = max_width(lines)
     local win_height = #lines
 
     local row = math.floor((ui.height - win_height) / 2)
