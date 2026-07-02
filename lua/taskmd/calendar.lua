@@ -22,7 +22,7 @@ local month_names = {
 }
 
 local width = 20
-local horizontal_padding = 2
+local horizontal_padding = 1
 local day_seconds = 24 * 60 * 60
 
 ---@type table<string, string>
