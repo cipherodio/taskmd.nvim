@@ -129,6 +129,14 @@ end
 ---@param bufnr integer
 ---@return string?
 function M.buffer_path(bufnr)
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+        return nil
+    end
+
+    if vim.bo[bufnr].buftype ~= "" then
+        return nil
+    end
+
     local name = vim.api.nvim_buf_get_name(bufnr)
 
     if name == "" then
