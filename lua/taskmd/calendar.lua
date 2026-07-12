@@ -25,20 +25,53 @@ local width = 20
 local horizontal_padding = 1
 local day_seconds = 24 * 60 * 60
 
----@type table<string, string>
+---@type table<string, table<string, string>>
 local default_colors = {
-    month = "#fe8019",
-    weekday = "#fabd2f",
-    day = "#ebdbb2",
-    today = "#83a598",
-    due = "#fb4934",
-    scheduled = "#b8bb26",
-    sched_due = "#8ec07c",
-    this_week = "#458588",
-    week_date = "#fabd2f",
-    week_task = "#ebdbb2",
-    week_time = "#8ec07c",
+    dark = {
+        foreground = "#ebdbb2",
+        background = "#1d2021",
+        border = "#504945",
+
+        month = "#fe8019",
+        weekday = "#fabd2f",
+        day = "#ebdbb2",
+        today = "#83a598",
+        due = "#fb4934",
+        scheduled = "#b8bb26",
+        sched_due = "#8ec07c",
+        this_week = "#458588",
+        week_date = "#fabd2f",
+        week_task = "#ebdbb2",
+        week_time = "#8ec07c",
+    },
+
+    light = {
+        foreground = "#3c3836",
+        background = "#fbf1c7",
+        border = "#d5c4a1",
+
+        month = "#af3a03",
+        weekday = "#b57614",
+        day = "#3c3836",
+        today = "#076678",
+        due = "#9d0006",
+        scheduled = "#79740e",
+        sched_due = "#427b58",
+        this_week = "#076678",
+        week_date = "#b57614",
+        week_task = "#3c3836",
+        week_time = "#427b58",
+    },
 }
+
+---@return "dark"|"light"
+local function background()
+    if vim.o.background == "light" then
+        return "light"
+    end
+
+    return "dark"
+end
 
 ---@param name string
 ---@return string
@@ -52,7 +85,7 @@ local function color(name)
         return value
     end
 
-    local fallback = default_colors[name]
+    local fallback = default_colors[background()][name]
 
     if type(fallback) == "string" then
         return fallback
@@ -93,6 +126,16 @@ end
 ---@field minutes integer
 
 local function set_highlights()
+    vim.api.nvim_set_hl(0, "TaskMDCalendarFloat", {
+        fg = color("foreground"),
+        bg = color("background"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarBorder", {
+        fg = color("border"),
+        bg = color("background"),
+    })
+
     vim.api.nvim_set_hl(0, "TaskMDCalendarMonth", {
         fg = color("month"),
     })
@@ -887,6 +930,9 @@ function M.open()
         style = "minimal",
         border = border(),
     })
+
+    vim.wo[winid].winhighlight =
+        "NormalFloat:TaskMDCalendarFloat,FloatBorder:TaskMDCalendarBorder"
 
     vim.wo[winid].wrap = false
     vim.wo[winid].cursorline = false
