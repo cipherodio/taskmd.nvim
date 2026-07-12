@@ -148,6 +148,7 @@ local function set_highlights()
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarToday", {
         fg = color("today"),
+        bold = true,
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarDue", {
@@ -160,6 +161,21 @@ local function set_highlights()
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarBoth", {
         fg = color("sched_due"),
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarTodayDue", {
+        fg = color("due"),
+        bold = true,
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarTodayScheduled", {
+        fg = color("scheduled"),
+        bold = true,
+    })
+
+    vim.api.nvim_set_hl(0, "TaskMDCalendarTodayBoth", {
+        fg = color("sched_due"),
+        bold = true,
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarThisWeek", {
@@ -366,20 +382,33 @@ end
 ---@return string
 local function day_group(key, today, marks)
     local mark = marks[key]
+    local is_today = key == today
 
     if mark and mark.due and mark.scheduled then
+        if is_today then
+            return "TaskMDCalendarTodayBoth"
+        end
+
         return "TaskMDCalendarBoth"
     end
 
     if mark and mark.due then
+        if is_today then
+            return "TaskMDCalendarTodayDue"
+        end
+
         return "TaskMDCalendarDue"
     end
 
     if mark and mark.scheduled then
+        if is_today then
+            return "TaskMDCalendarTodayScheduled"
+        end
+
         return "TaskMDCalendarScheduled"
     end
 
-    if key == today then
+    if is_today then
         return "TaskMDCalendarToday"
     end
 
