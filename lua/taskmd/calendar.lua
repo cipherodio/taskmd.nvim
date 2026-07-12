@@ -29,7 +29,6 @@ local day_seconds = 24 * 60 * 60
 local default_colors = {
     dark = {
         foreground = "#ebdbb2",
-        background = "#1d2021",
         border = "#504945",
 
         month = "#fe8019",
@@ -47,7 +46,6 @@ local default_colors = {
 
     light = {
         foreground = "#3c3836",
-        background = "#fbf1c7",
         border = "#d5c4a1",
 
         month = "#af3a03",
@@ -128,12 +126,12 @@ end
 local function set_highlights()
     vim.api.nvim_set_hl(0, "TaskMDCalendarFloat", {
         fg = color("foreground"),
-        bg = color("background"),
+        bg = "NONE",
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarBorder", {
         fg = color("border"),
-        bg = color("background"),
+        bg = "NONE",
     })
 
     vim.api.nvim_set_hl(0, "TaskMDCalendarMonth", {
